@@ -27,7 +27,7 @@
   --tc:521px; /* type change point */
 }
 html{font-size:15px;scroll-behavior:smooth;margin:0;padding:0;background:#0D0D0D}
-body{font-family:'Poppins',sans-serif;background:#fff;color:var(--text);min-height:100vh;display:flex;flex-direction:column;margin:0;padding:0}
+body{font-family:'Poppins',sans-serif;background:#0D0D0D;color:var(--text);min-height:100vh;display:flex;flex-direction:column;margin:0;padding:0}
 
 /* ══ TOPBAR ═════════════════════════════════════════ */
 .topbar{
@@ -38,6 +38,7 @@ body{font-family:'Poppins',sans-serif;background:#fff;color:var(--text);min-heig
   position:sticky;top:0;z-index:200;
   justify-content:space-between;
   box-shadow:0 2px 16px rgba(0,0,0,0.2);
+  flex-shrink:0;
 }
 .tb-brand{display:flex;align-items:center;gap:13px;text-decoration:none}
 .tb-logo{width:auto;height:38px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
@@ -84,7 +85,8 @@ body{font-family:'Poppins',sans-serif;background:#fff;color:var(--text);min-heig
 .user-name{color:rgba(255,255,255,0.88);font-size:12px;font-weight:500}
 
 /* ══ LAYOUT ══════════════════════════════════════════ */
-.layout{display:flex;flex:1;position:relative}
+.content-wrap{background:#fff;display:flex;flex-direction:column;flex:1;min-height:0}
+.layout{display:flex;flex:1;position:relative;background:#fff}
 .main{padding:20px;flex:1;overflow-x:hidden;
       transition:padding-left .28s cubic-bezier(.4,0,.2,1)}
 .sidebar-open .main{padding-left:20px}
@@ -986,12 +988,7 @@ body{font-family:'Poppins',sans-serif;background:#fff;color:var(--text);min-heig
   display:flex;align-items:center;justify-content:center;
 }
 
-/* ── KYC info bubble ── */
-.kyc-info-bubble {
-  background:#FFF8E6;border:1px solid #F0C860;border-radius:12px;
-  padding:14px 16px;margin-bottom:16px;font-size:13px;line-height:1.6;color:#5C3A00;
-}
-.kyc-info-bubble strong { color:#CC0000; }
+/* kyc-info-bubble removed */
 
 /* ── Preaprobacion info bubble ── */
 .preapro-info-bubble {
@@ -1239,6 +1236,7 @@ body{font-family:'Poppins',sans-serif;background:#fff;color:var(--text);min-heig
 </div>
 
 <!-- ══ TOPBAR ══════════════════════════════════════════ -->
+<div class="content-wrap">
 <header class="topbar">
   <!-- Left group: hamburger + logos -->
   <div style="display:flex;align-items:center;gap:12px;flex-shrink:0">
@@ -1625,7 +1623,10 @@ body{font-family:'Poppins',sans-serif;background:#fff;color:var(--text);min-heig
          MÓDULO: KYC
     ════════════════════════════════════════════════════ -->
     <section id="mod-kyc" class="module">
-      <div class="page-title">KYC &amp; Consentimiento</div>
+      <div class="page-title" style="display:flex;align-items:center;gap:10px">
+        Conozca a su Cliente
+        <span onclick="showKycInfo()" class="plan-info-btn" style="font-size:14px;width:22px;height:22px;flex-shrink:0" title="¿Qué es el KYC?">ℹ</span>
+      </div>
       <div class="page-sub">Proceso de aprobación pos-cotización · Firma electrónica · 100% digital</div>
       <div class="kyc-layout">
         <div class="kyc-prog-card">
@@ -3856,6 +3857,7 @@ window.addEventListener('DOMContentLoaded', () => {
 <!-- ══════════════════════════════════════════════════
      PUGBOT – Chat con el perrito Purdy
 ══════════════════════════════════════════════════════ -->
+</div><!-- /content-wrap -->
 <style>
 /* ── PugBot chat window ── */
 .pug-fab {
