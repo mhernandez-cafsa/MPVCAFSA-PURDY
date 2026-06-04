@@ -289,7 +289,11 @@ body{font-family:'Poppins',sans-serif;background:#fff;color:var(--text);min-heig
   display:grid;
   background:var(--blue);
   border-radius:0;
+  cursor:pointer;
+  user-select:none;
+  transition:filter .15s;
 }
+.cmp-section-bar:hover { filter:brightness(1.12); }
 .cmp-section-bar span{
   padding:8px 20px;
   font-size:10px;font-weight:700;color:rgba(255,255,255,0.55);
@@ -1478,8 +1482,18 @@ body{font-family:'Poppins',sans-serif;background:#fff;color:var(--text);min-heig
 
         <!-- Feature table -->
         <div class="card" style="margin-bottom:24px;overflow:hidden">
-          <div class="cmp-section-bar" id="cmp-feat-bar" style="display:grid"></div>
-          <div id="cmp-feat-body"></div>
+          <!-- Características header (collapsible) -->
+          <div class="cmp-section-bar" id="cmp-feat-bar" style="display:grid;cursor:pointer"
+               onclick="toggleCmpSection('feat-body','feat-chevron')">
+          </div>
+          <div id="cmp-feat-body" style="overflow:hidden;transition:max-height .35s ease"></div>
+
+          <!-- Equipamiento header (collapsible, starts collapsed) -->
+          <div id="cmp-equip-bar" class="cmp-section-bar"
+               style="display:grid;cursor:pointer;margin-top:0;border-top:1px solid var(--border)"
+               onclick="toggleCmpSection('cmp-equip-body','equip-chevron')">
+          </div>
+          <div id="cmp-equip-body" style="max-height:0;overflow:hidden;transition:max-height .35s ease"></div>
         </div>
 
         <!-- Financing section -->
@@ -2418,64 +2432,203 @@ function runCompare() {
       </div>`
     ).join('');
 
-  /* Feature section bar */
+  /* Feature section bar — collapsible, starts OPEN */
   const bar = document.getElementById('cmp-feat-bar');
-  bar.style.gridTemplateColumns = colDef;
-  bar.innerHTML = `<span>Características</span>` + cars.map(c => `<span>${c.name}</span>`).join('');
+  bar.style.gridTemplateColumns = `140px repeat(${n},1fr)`;
+  bar.innerHTML =
+    `<span style="display:flex;align-items:center;gap:8px">
+       <span id="feat-chevron" style="transition:transform .3s;display:inline-block">▼</span>
+       Características
+     </span>` +
+    cars.map(c => `<span>${c.name}</span>`).join('');
 
   /* Feature rows */
   const feats = [
-    { label:'Motor', icon:'⚙', key:'motor' },
-    { label:'Transmisión', icon:'🔧', key:'trans' },
-    { label:'Rendimiento', icon:'⛽', key:'rendimiento' },
-    { label:'Asientos', icon:'💺', key:'asientos' },
-    { label:'Precio (USD)', icon:'💵', key:'usd', fmt: v => `$${v.toLocaleString()}` },
-    { label:'Precio (₡)', icon:'🇨🇷', key:'usd', fmt: v => `₡${Math.round(v*521).toLocaleString()}` },
+    { label:'Motor',        icon:'⚙️',  key:'motor' },
+    { label:'Transmisión',  icon:'🔧', key:'trans' },
+    { label:'Rendimiento',  icon:'⛽', key:'rendimiento' },
+    { label:'Asientos',     icon:'💺', key:'asientos' },
+    { label:'Precio USD',   icon:'💵', key:'usd', fmt: v => `$${v.toLocaleString()}` },
+    { label:'Precio ₡',    icon:'🇨🇷', key:'usd', fmt: v => `₡${Math.round(v*521).toLocaleString()}` },
   ];
 
   const body = document.getElementById('cmp-feat-body');
   body.innerHTML = '';
-
   feats.forEach(f => {
     const vals = cars.map(c => f.fmt ? f.fmt(c[f.key]) : c[f.key]);
     const row = document.createElement('div');
     row.className = 'cmp-row';
-    row.style.gridTemplateColumns = colDef;
+    row.style.gridTemplateColumns = `140px repeat(${n},1fr)`;
     row.innerHTML = `<div class="cmp-label">${f.icon} ${f.label}</div>` +
       cars.map((c, i) => {
         const raw = c[f.key];
         const best = f.key === 'usd' ? Math.min(...cars.map(x => x[f.key])) : null;
         const isWin = best !== null && raw === best;
-        return `<div class="cmp-cell${i === 1 ? ' alt' : ''}">${isWin ? `<span class="win">${vals[i]}</span>` : vals[i]}</div>`;
+        return `<div class="cmp-cell${i===1?' alt':''}">${isWin?`<span class="win">${vals[i]}</span>`:vals[i]}</div>`;
       }).join('');
     body.appendChild(row);
   });
+  // Start open
+  body.style.maxHeight = body.scrollHeight + 200 + 'px';
 
-  /* Features included */
+  /* Equipamiento — collapsible, starts COLLAPSED */
+  const equipBar = document.getElementById('cmp-equip-bar');
+  equipBar.style.gridTemplateColumns = `140px repeat(${n},1fr)`;
+  equipBar.innerHTML =
+    `<span style="display:flex;align-items:center;gap:8px">
+       <span id="equip-chevron" style="transition:transform .3s;display:inline-block;transform:rotate(-90deg)">▼</span>
+       Equipamiento incluido
+     </span>` +
+    cars.map(c => `<span>${c.name}</span>`).join('');
+
+  const equipBody = document.getElementById('cmp-equip-body');
+  equipBody.innerHTML = '';
   const allFeats = [...new Set(cars.flatMap(c => c.features))].sort();
-  const featSection = document.createElement('div');
-  featSection.innerHTML = `<div class="cmp-section-bar" style="grid-template-columns:${colDef}"><span>Equipamiento incluido</span>${cars.map(c=>`<span>${c.name}</span>`).join('')}</div>`;
-  body.appendChild(featSection);
-
   allFeats.forEach(f => {
     const row = document.createElement('div');
     row.className = 'cmp-row';
-    row.style.gridTemplateColumns = colDef;
+    row.style.gridTemplateColumns = `140px repeat(${n},1fr)`;
     row.innerHTML = `<div class="cmp-label">🔹 ${f}</div>` +
-      cars.map((c, i) =>
+      cars.map((c,i) =>
         `<div class="cmp-cell${i===1?' alt':''}">
-          ${c.features.includes(f)
-            ? '<span class="ck">✓</span>'
-            : '<span class="cx">—</span>'}
-        </div>`
-      ).join('');
-    body.appendChild(row);
+          ${c.features.includes(f)?'<span class="ck">✓</span>':'<span class="cx">—</span>'}
+        </div>`).join('');
+    equipBody.appendChild(row);
   });
+  // Start collapsed
+  equipBody.style.maxHeight = '0';
+
+  /* ── VS Price + Cuota bar chart ──────────────────── */
+  buildVsChart(cars);
 
   /* Show results */
   document.getElementById('cmp-results').classList.add('show');
   buildFinGrid(cars);
   document.getElementById('cmp-results').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function toggleCmpSection(bodyId, chevronId) {
+  const body = document.getElementById(bodyId);
+  const chev = document.getElementById(chevronId);
+  const isOpen = body.style.maxHeight !== '0px' && body.style.maxHeight !== '0';
+  if (isOpen) {
+    body.style.maxHeight = '0';
+    if (chev) chev.style.transform = 'rotate(-90deg)';
+  } else {
+    body.style.maxHeight = body.scrollHeight + 300 + 'px';
+    if (chev) chev.style.transform = 'rotate(0deg)';
+  }
+}
+
+function buildVsChart(cars) {
+  // Remove old chart if any
+  const oldChart = document.getElementById('vs-price-chart');
+  if (oldChart) oldChart.remove();
+
+  const tc = parseFloat(document.getElementById('cmp-tc')?.value) || 521;
+  const meses = parseInt(document.getElementById('plazo-sel')?.value) || 60;
+  const primaP = parseInt(document.getElementById('prima-sel')?.value) || 20;
+
+  // Colors per car
+  const CAR_COLORS = ['#CC0000','#1E5C08','#7A4A04','#1A4A8B','#6B0000'];
+
+  // Compute best cuota (AOFF) per car
+  function cuota(usd) {
+    const pv = usd * (1 - primaP/100);
+    const r = 0.085/12;
+    const res = pv * 0.20;
+    return Math.round((pv*r - res*r/Math.pow(1+r,meses))/(1-Math.pow(1+r,-meses)));
+  }
+
+  const maxPrice = Math.max(...cars.map(c => c.usd));
+  const maxCuota = Math.max(...cars.map(c => cuota(c.usd)));
+
+  const BAR_H = 160;
+  const BAR_W = 90;
+  const GAP   = 24;
+  const LABEL_W = 90;
+  const chartW = LABEL_W + cars.length * (BAR_W * 2 + GAP + 20) + 20;
+  const chartH = BAR_H + 80;
+
+  // Build SVG bars — two bars per car: price + cuota
+  let svgBars = '';
+  cars.forEach((car, i) => {
+    const x = LABEL_W + i * (BAR_W * 2 + GAP + 20);
+    const priceH = Math.round((car.usd / maxPrice) * BAR_H);
+    const cuotaH = Math.round((cuota(car.usd) / maxCuota) * BAR_H);
+    const col = CAR_COLORS[i % CAR_COLORS.length];
+    const colLight = col + '55';
+
+    // Price bar
+    svgBars += `
+      <rect x="${x}" y="${BAR_H - priceH + 10}" width="${BAR_W - 4}" height="${priceH}"
+            fill="${col}" rx="4" opacity="0.9"/>
+      <text x="${x + (BAR_W-4)/2}" y="${BAR_H - priceH + 4}" text-anchor="middle"
+            font-size="10" font-weight="700" fill="${col}" font-family="Poppins,sans-serif">
+        $${car.usd.toLocaleString()}
+      </text>`;
+
+    // Cuota bar
+    svgBars += `
+      <rect x="${x + BAR_W}" y="${BAR_H - cuotaH + 10}" width="${BAR_W - 4}" height="${cuotaH}"
+            fill="${col}" rx="4" opacity="0.5"/>
+      <text x="${x + BAR_W + (BAR_W-4)/2}" y="${BAR_H - cuotaH + 4}" text-anchor="middle"
+            font-size="10" font-weight="700" fill="${col}" font-family="Poppins,sans-serif">
+        $${cuota(car.usd).toLocaleString()}
+      </text>`;
+
+    // Car label
+    svgBars += `
+      <text x="${x + BAR_W - 2}" y="${BAR_H + 26}" text-anchor="middle"
+            font-size="11" font-weight="700" fill="#1A0000" font-family="Poppins,sans-serif">
+        ${car.name}
+      </text>`;
+
+    // Sub labels
+    svgBars += `
+      <text x="${x + (BAR_W-4)/2}" y="${BAR_H + 42}" text-anchor="middle"
+            font-size="9" fill="${col}" font-family="Poppins,sans-serif">Precio</text>
+      <text x="${x + BAR_W + (BAR_W-4)/2}" y="${BAR_H + 42}" text-anchor="middle"
+            font-size="9" fill="${col}" font-family="Poppins,sans-serif">Cuota/mes</text>`;
+  });
+
+  // Legend
+  const legendItems = ['Precio total (USD)','Cuota AOFF ${meses}m (USD)'];
+  let legend = `
+    <rect x="10" y="4" width="12" height="12" fill="#CC0000" rx="2" opacity="0.9"/>
+    <text x="26" y="14" font-size="10" fill="#444" font-family="Poppins,sans-serif">Precio total (USD)</text>
+    <rect x="150" y="4" width="12" height="12" fill="#CC0000" rx="2" opacity="0.5"/>
+    <text x="166" y="14" font-size="10" fill="#444" font-family="Poppins,sans-serif">Cuota AOFF ${meses}m</text>`;
+
+  const chartHtml = `
+  <div id="vs-price-chart" style="background:#fff;border:1px solid var(--border);border-radius:14px;
+       padding:18px;margin-bottom:18px;overflow-x:auto">
+    <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:14px">
+      📊 Comparativa: Precio vs Cuota mensual AOFF · ${meses} meses · Prima ${primaP}%
+    </div>
+    <svg viewBox="0 0 ${chartW} ${chartH + 20}" style="width:100%;min-width:${Math.min(chartW,360)}px;overflow:visible">
+      <!-- Horizontal guide lines -->
+      ${[25,50,75,100].map(pct => {
+        const y = BAR_H - (pct/100)*BAR_H + 10;
+        return `<line x1="${LABEL_W}" y1="${y}" x2="${chartW-10}" y2="${y}"
+                      stroke="#F0F0F0" stroke-width="1"/>
+                <text x="${LABEL_W-4}" y="${y+4}" text-anchor="end" font-size="8" fill="#CCC"
+                      font-family="Poppins,sans-serif">${pct}%</text>`;
+      }).join('')}
+      <!-- Bars -->
+      ${svgBars}
+      <!-- Legend -->
+      <g transform="translate(${LABEL_W},${BAR_H + 54})">${legend}</g>
+    </svg>
+  </div>`;
+
+  // Insert before the fin-section
+  const finSection = document.querySelector('.fin-section');
+  if (finSection) finSection.insertAdjacentHTML('beforebegin', chartHtml);
+  else {
+    const results = document.getElementById('cmp-results');
+    if (results) results.insertAdjacentHTML('beforeend', chartHtml);
+  }
 }
 
 /* ── Financing ────────────────────────────────────── */
