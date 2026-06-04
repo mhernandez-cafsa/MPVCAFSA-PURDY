@@ -1283,7 +1283,7 @@ body{font-family:'Poppins',sans-serif;background:#0D0D0D;color:var(--text);min-h
       <span style="opacity:0.45;font-size:9px;margin-left:2px">▾</span>
     </button>
 
-    <button class="tb-icon-btn" title="Notificaciones">
+    <button class="tb-icon-btn" title="Notificaciones" onclick="toggleNotifPanel()" style="position:relative">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
     </button>
     <div class="user-pill">
@@ -2357,7 +2357,7 @@ body{font-family:'Poppins',sans-serif;background:#0D0D0D;color:var(--text);min-h
       <!-- Stats -->
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px">
         <div style="background:#FDECEC;border-radius:12px;padding:14px;text-align:center">
-          <div style="font-size:22px;font-weight:800;color:#8B1C1C">4</div>
+          <div style="font-size:22px;font-weight:800;color:#8B1C1C" id="stat-urgentes">4</div>
           <div style="font-size:10px;color:#A06060;text-transform:uppercase;letter-spacing:0.4px">Urgentes</div>
         </div>
         <div style="background:#FFF8E6;border-radius:12px;padding:14px;text-align:center">
@@ -2377,18 +2377,7 @@ body{font-family:'Poppins',sans-serif;background:#0D0D0D;color:var(--text);min-h
       <div style="display:grid;grid-template-columns:320px 1fr;gap:18px">
         <!-- LEFT: ticket queue -->
         <div style="display:flex;flex-direction:column;gap:10px">
-          <!-- Dept filter tabs -->
-          <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:10px">
-            <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:8px">Departamento</div>
-            <div style="display:flex;flex-wrap:wrap;gap:5px" id="dept-tabs">
-              <button class="dept-tab active" onclick="filterByDept('todos',this)">Todos</button>
-              <button class="dept-tab" onclick="filterByDept('Crédito',this)">💳 Crédito</button>
-              <button class="dept-tab" onclick="filterByDept('Cobro',this)">💰 Cobro</button>
-              <button class="dept-tab" onclick="filterByDept('Flotilla',this)">🚛 Flotilla</button>
-              <button class="dept-tab" onclick="filterByDept('Siniestros',this)">🚨 Siniestros</button>
-              <button class="dept-tab" onclick="filterByDept('KYC',this)">🛡 KYC</button>
-            </div>
-          </div>
+
           <!-- Priority filter -->
           <div style="display:flex;gap:6px">
             <button class="cafsa-f-btn active" onclick="filterTickets('todos',this)" style="flex:1">Todos</button>
@@ -2474,6 +2463,7 @@ body{font-family:'Poppins',sans-serif;background:#0D0D0D;color:var(--text);min-h
                 <button class="btn btn-ghost btn-sm" onclick="addCafsaBitEntry('Ticket escalado a supervisor')">⬆ Escalar</button>
                 <button class="btn btn-ghost btn-sm" onclick="goModule('kyc',3)">📋 Ver KYC</button>
                 <button class="btn btn-ghost btn-sm" onclick="addCafsaBitEntry('Notificación enviada al cliente')">📧 Notificar</button>
+                <button class="btn btn-ghost btn-sm" onclick="openAgentChatFromTicket()" style="background:#F0F4FF;color:#1A4A8B;border-color:#1A4A8B">💬 Consultar agente</button>
               </div>
             </div>
 
@@ -3599,7 +3589,18 @@ const MOCK_TICKETS = [
   { id:'TKT-0043', priority:'bajo',    title:'Consulta plan de talleres',        client:'María Alvarado S.',product:'Yaris · Prendario',     dept:'Crédito',    assigned:'Rodolfo M.',  sla:'📅 3 días',   mora:0,  stars:4, score:'AA',  payNote:'A', clientId:'MA4' },
   { id:'TKT-0042', priority:'bajo',    title:'Actualización datos de contacto',  client:'Ana Patricia Z.',  product:'Highlander · AOFF',     dept:'KYC',        assigned:'Sin asignar', sla:'📅 3 días',   mora:0,  stars:5, score:'AAA', payNote:'A', clientId:'AP6' },
   { id:'TKT-0041', priority:'urgente', title:'Solicitud flota nueva empresa',    client:'Constructora Silva',product:'Flotilla · AOP',       dept:'Flotilla',   assigned:'Carlos R.',   sla:'⏰ 2 hrs',    mora:0,  stars:4, score:'AA',  payNote:'A', clientId:'CS7' },
-  { id:'TKT-0040', priority:'medio',   title:'Mora grave · gestión especial',    client:'Diego Castro M.',  product:'Rush · AOFF',           dept:'Cobro',      assigned:'María V.',    sla:'🕐 Hoy',      mora:45, stars:2, score:'C',   payNote:'D', clientId:'DC8' },
+  { id:'TKT-0040', priority:'urgente', title:'Mora grave · gestión especial',   client:'Diego Castro M.',   product:'Rush · AOFF',          dept:'Cobro',      assigned:'María V.',    sla:'🕐 Hoy',     mora:45, stars:2, score:'C',   payNote:'D', clientId:'DC8' },
+  { id:'TKT-0039', priority:'urgente', title:'KYC empresarial vencido',          client:'Inversiones Norte', product:'Flotilla · AOP',       dept:'KYC',        assigned:'Carlos R.',   sla:'⏰ 1 hr',    mora:0,  stars:4, score:'AA',  payNote:'A', clientId:'IN9' },
+  { id:'TKT-0038', priority:'medio',   title:'Solicitud finiquito anticipado',   client:'Paola Vega M.',     product:'Corolla · AOFF',       dept:'Crédito',    assigned:'Rodolfo M.',  sla:'🕐 Mañana',  mora:0,  stars:5, score:'AAA', payNote:'A', clientId:'PV10' },
+  { id:'TKT-0037', priority:'medio',   title:'Reclamo cobro doble cuota',        client:'Esteban Cruz L.',   product:'Hilux · Prendario',    dept:'Cobro',      assigned:'María V.',    sla:'🕐 Hoy 18h', mora:0,  stars:3, score:'A',   payNote:'B', clientId:'EC11' },
+  { id:'TKT-0036', priority:'medio',   title:'Renovación flotilla empresarial',  client:'Grupo Delta S.A.',  product:'8 vehículos · AOP',    dept:'Flotilla',   assigned:'Carlos R.',   sla:'📅 2 días',  mora:0,  stars:4, score:'AA',  payNote:'A', clientId:'GD12' },
+  { id:'TKT-0035', priority:'bajo',    title:'Solicitud carta de no mora',       client:'Rebeca Solano V.',  product:'Yaris · AOFF',         dept:'Crédito',    assigned:'Rodolfo M.',  sla:'📅 3 días',  mora:0,  stars:5, score:'AAA', payNote:'A', clientId:'RS13' },
+  { id:'TKT-0034', priority:'bajo',    title:'Cambio beneficiario de seguro',    client:'Marco Arias P.',    product:'RAV4 · Renting',       dept:'Siniestros', assigned:'Sin asignar', sla:'📅 4 días',  mora:0,  stars:4, score:'AA',  payNote:'A', clientId:'MA14' },
+  { id:'TKT-0033', priority:'bajo',    title:'Consulta tasa de interés vigente', client:'Sofía Blanco M.',   product:'Fortuner · AOFF',      dept:'Crédito',    assigned:'Sin asignar', sla:'📅 5 días',  mora:0,  stars:3, score:'A',   payNote:'B', clientId:'SB15' },
+  { id:'TKT-0032', priority:'urgente', title:'Vehículo reportado robado',        client:'Fernando Mora C.',  product:'Highlander · AOFF',    dept:'Siniestros', assigned:'María V.',    sla:'⏰ Ahora',    mora:0,  stars:4, score:'AA+', payNote:'A', clientId:'FM16' },
+  { id:'TKT-0031', priority:'medio',   title:'Arreglo de pago · 3 meses',       client:'Lucía Herrera V.',  product:'Camry · Prendario',    dept:'Cobro',      assigned:'Rodolfo M.',  sla:'🕐 Mañana',  mora:22, stars:3, score:'B',   payNote:'C', clientId:'LH17' },
+  { id:'TKT-0030', priority:'bajo',    title:'Actualización IBAN cuenta',        client:'Natalia Ulate R.',  product:'Yaris · Prendario',    dept:'Crédito',    assigned:'Sin asignar', sla:'📅 5 días',  mora:0,  stars:4, score:'A',   payNote:'A', clientId:'NU18' },
+  { id:'TKT-0029', priority:'medio',   title:'Solicitud suspensión póliza',      client:'Gabriel Solís M.',  product:'Tundra · AOFF',        dept:'Siniestros', assigned:'María V.',    sla:'🕐 Mañana',  mora:0,  stars:4, score:'AA',  payNote:'A', clientId:'GS19' },
 ];
 
 const TICKET_STARS = {}; // track star ratings per ticket
@@ -3624,25 +3625,48 @@ const CAFSA_BIT = {};
 
 function initCafsaMesa() {
   renderCafsaTickets(MOCK_TICKETS);
+  // Update stats
+  const urgCount = MOCK_TICKETS.filter(t => t.priority === 'urgentes').length;
+  const el = document.getElementById('stat-urgentes');
+  if (el) el.textContent = MOCK_TICKETS.filter(t => t.priority === 'urgente').length;
+  setTimeout(updateNotifBadge, 100);
 }
+
+const DEPT_COLORS = {
+  'Crédito':   '#1A4A8B','Cobro':'#7A4A04','Flotilla':'#1E5C08',
+  'Siniestros':'#8B1C1C','KYC':'#6B0000'
+};
 
 function renderCafsaTickets(tickets) {
   const list = document.getElementById('cafsa-ticket-list');
   if (!list) return;
   const pColors = { urgente:'#CC0000', medio:'#F5A623', bajo:'#1E5C08' };
-  list.innerHTML = tickets.map(t => `
+  if (!tickets.length) {
+    list.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text3);font-size:12px">Sin tickets en esta vista</div>';
+    return;
+  }
+  list.innerHTML = tickets.map(t => {
+    const deptCol = DEPT_COLORS[t.dept] || '#555';
+    const isMe = t.assigned !== 'Sin asignar';
+    return `
     <div class="ticket-row ${selectedCafsaTicket===t.id?'selected':''}" onclick="selectCafsaTicket('${t.id}')">
       <div class="ticket-priority" style="background:${pColors[t.priority]}"></div>
       <div style="flex:1;min-width:0">
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">
+        <div style="display:flex;align-items:center;gap:5px;margin-bottom:3px">
           <span class="ticket-id">${t.id}</span>
-          <span class="ticket-title">${t.title}</span>
+          <span class="ticket-title" style="flex:1">${t.title}</span>
         </div>
-        <div class="ticket-meta">${t.client} · ${t.product}</div>
-        <div style="font-size:10px;color:var(--text3);margin-top:1px">${t.sla}</div>
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <span style="font-size:11px;font-weight:600;color:var(--text2)">${t.client}</span>
+          <span style="font-size:10px;background:${deptCol}18;color:${deptCol};border-radius:10px;padding:1px 7px;font-weight:700;border:1px solid ${deptCol}30">${t.dept}</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:3px">
+          <span style="font-size:10px;color:var(--text3)">${t.product} · ${t.sla}</span>
+          <span style="font-size:9px;font-weight:600;color:${isMe?'var(--blue)':'var(--text3)'};flex-shrink:0">${t.assigned}</span>
+        </div>
       </div>
-      <span style="font-size:9px;color:var(--text3);flex-shrink:0;max-width:60px;text-align:right">${t.assigned}</span>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 let cafsaTicketFilter = 'todos';
@@ -4633,6 +4657,229 @@ async function pugSendQuick(text) {
   setTimeout(show, 2000);
   setInterval(show, 7000);
 })();
+</script>
+
+<!-- ══ NOTIFICATION PANEL ══════════════════════════════ -->
+<div id="notif-panel" class="notif-panel">
+  <div class="notif-head">
+    <div style="font-size:18px">🔔</div>
+    <div style="flex:1">
+      <div style="color:#fff;font-size:14px;font-weight:700">Mis Notificaciones</div>
+      <div style="color:rgba(255,255,255,0.6);font-size:10px">Tickets por atender hoy</div>
+    </div>
+    <button onclick="toggleNotifPanel()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:14px">✕</button>
+  </div>
+  <div style="display:flex;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border);flex-shrink:0">
+    <button onclick="filterNotifs('todos')" id="nf-all" class="dept-tab active" style="font-size:10px;padding:4px 10px">Todos</button>
+    <button onclick="filterNotifs('mis')" id="nf-mis" class="dept-tab" style="font-size:10px;padding:4px 10px">Mis tickets</button>
+    <button onclick="filterNotifs('urgente')" id="nf-urg" class="dept-tab" style="font-size:10px;padding:4px 10px;background:#FDECEC;border-color:#CC0000;color:#8B0000">🔴 Urgentes</button>
+  </div>
+  <div id="notif-list" style="flex:1;overflow-y:auto"></div>
+  <div style="padding:10px 12px;border-top:1px solid var(--border);flex-shrink:0">
+    <button onclick="markAllRead()" class="btn btn-ghost btn-sm" style="width:100%;justify-content:center;font-size:11px">✓ Marcar todas como leídas</button>
+  </div>
+</div>
+<div id="notif-backdrop" onclick="toggleNotifPanel()" style="display:none;position:fixed;inset:0;z-index:849"></div>
+
+<!-- ══ AGENT CHAT OVERLAY ════════════════════════════════ -->
+<div id="agent-chat-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:860;align-items:center;justify-content:center">
+  <div class="agent-chat-box">
+    <div class="agent-chat-head">
+      <div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.2);color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0" id="ag-av">RM</div>
+      <div style="flex:1">
+        <div style="color:#fff;font-size:13px;font-weight:700" id="ag-name">Rodolfo Méndez</div>
+        <div style="color:rgba(255,255,255,0.6);font-size:10px" id="ag-role">Ejecutivo Senior · Crédito</div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <div style="width:7px;height:7px;border-radius:50%;background:#4ADE80;animation:pugBlink 2s infinite"></div>
+        <span style="color:rgba(255,255,255,0.6);font-size:10px">En línea</span>
+      </div>
+      <button onclick="closeAgentChat()" style="margin-left:10px;background:rgba(255,255,255,0.15);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:14px">✕</button>
+    </div>
+    <!-- Ticket context bar -->
+    <div id="ag-ticket-ctx" style="padding:8px 14px;background:#FFF8F8;border-bottom:1px solid var(--border);font-size:11px;color:var(--text2);display:flex;align-items:center;gap:8px">
+      <span style="font-size:14px">🎫</span>
+      <span id="ag-ctx-text">Consultando sobre ticket</span>
+    </div>
+    <!-- Messages -->
+    <div id="agent-chat-msgs" style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;background:#FAFAFA"></div>
+    <!-- Input -->
+    <div style="display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--border);background:#fff;flex-shrink:0">
+      <input id="agent-chat-input" style="flex:1;border:1.5px solid rgba(180,0,0,0.2);border-radius:20px;padding:8px 14px;font-family:inherit;font-size:13px;outline:none;transition:border-color .15s"
+        placeholder="Escribe un mensaje al agente..."
+        onfocus="this.style.borderColor='#CC0000'" onblur="this.style.borderColor='rgba(180,0,0,0.2)'"
+        onkeydown="if(event.key==='Enter')sendAgentMsg()">
+      <button onclick="sendAgentMsg()" style="width:36px;height:36px;border-radius:50%;background:#CC0000;border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:14px;height:14px"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══ NOTIFICATION PANEL ══════════════════════════════════ */
+let notifOpen = false;
+const NOTIF_READ = new Set();
+
+const MOCK_NOTIFS = [
+  { id:'n1', priority:'urgente', ticket:'TKT-0047', client:'Carlos Mora J.',    msg:'Prórroga de cuota vence en 4 horas. Requiere aprobación inmediata.',   time:'Hace 5 min',  mine:true },
+  { id:'n2', priority:'urgente', ticket:'TKT-0046', client:'Jorge Ramírez C.', msg:'Siniestro reportado · Hilux. Aseguradora solicitó documentos.',          time:'Hace 18 min', mine:false },
+  { id:'n3', priority:'urgente', ticket:'TKT-0032', client:'Fernando Mora C.', msg:'Vehículo reportado robado. Bloqueo de contrato urgente.',                time:'Hace 22 min', mine:false },
+  { id:'n4', priority:'urgente', ticket:'TKT-0039', client:'Inversiones Norte',msg:'KYC empresarial vencido. Flotilla en riesgo de suspensión.',             time:'Hace 35 min', mine:true },
+  { id:'n5', priority:'medio',   ticket:'TKT-0045', client:'Laura Alfaro V.',  msg:'Carta de saldo lista para entrega. Pendiente firma del cliente.',        time:'Hace 1 hr',   mine:true },
+  { id:'n6', priority:'medio',   ticket:'TKT-0044', client:'Roberto Pérez L.', msg:'Cambio de fecha de cuota requiere autorización de Cobro.',              time:'Hace 2 hrs',  mine:false },
+  { id:'n7', priority:'medio',   ticket:'TKT-0037', client:'Esteban Cruz L.',  msg:'Reclamo cobro doble — cliente solicita respuesta hoy.',                 time:'Hace 2 hrs',  mine:false },
+  { id:'n8', priority:'bajo',    ticket:'TKT-0035', client:'Rebeca Solano V.', msg:'Carta de no mora generada automáticamente. Pendiente envío.',           time:'Hace 3 hrs',  mine:true },
+  { id:'n9', priority:'bajo',    ticket:'TKT-0033', client:'Sofía Blanco M.',  msg:'Consulta de tasa asignada. Sin agente aún.',                           time:'Hace 4 hrs',  mine:false },
+];
+
+let notifFilter = 'todos';
+
+function toggleNotifPanel() {
+  notifOpen = !notifOpen;
+  document.getElementById('notif-panel').classList.toggle('open', notifOpen);
+  document.getElementById('notif-backdrop').style.display = notifOpen ? 'block' : 'none';
+  if (notifOpen) renderNotifs();
+}
+
+function filterNotifs(f) {
+  notifFilter = f;
+  ['all','mis','urg'].forEach(k => document.getElementById('nf-'+k)?.classList.remove('active'));
+  document.getElementById('nf-'+f === 'todos' ? 'all' : f === 'mis' ? 'mis' : 'urg')?.classList.add('active');
+  renderNotifs();
+}
+
+function renderNotifs() {
+  const list = document.getElementById('notif-list');
+  if (!list) return;
+  const pColors = { urgente:'#CC0000', medio:'#F5A623', bajo:'#1E5C08' };
+  let notifs = MOCK_NOTIFS;
+  if (notifFilter === 'mis') notifs = notifs.filter(n => n.mine);
+  if (notifFilter === 'urgente') notifs = notifs.filter(n => n.priority === 'urgente');
+  list.innerHTML = notifs.map(n => {
+    const read = NOTIF_READ.has(n.id);
+    return `<div class="notif-item ${read?'':'unread'}" onclick="openFromNotif('${n.id}','${n.ticket}')">
+      <div class="notif-dot ${read?'read':''}"></div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+          <span style="font-size:10px;font-weight:700;color:${pColors[n.priority]};text-transform:uppercase">${n.priority}</span>
+          <span style="font-size:10px;color:var(--text3)">${n.ticket}</span>
+        </div>
+        <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px">${n.client}</div>
+        <div style="font-size:11px;color:var(--text2);line-height:1.4">${n.msg}</div>
+        <div style="font-size:9px;color:var(--text3);margin-top:3px">${n.time}</div>
+      </div>
+    </div>`;
+  }).join('') || '<div style="padding:24px;text-align:center;color:var(--text3);font-size:12px">Sin notificaciones</div>';
+}
+
+function openFromNotif(notifId, ticketId) {
+  NOTIF_READ.add(notifId);
+  toggleNotifPanel();
+  goModule('mesa-cafsa', 9);
+  setTimeout(() => selectCafsaTicket(ticketId), 300);
+}
+
+function markAllRead() {
+  MOCK_NOTIFS.forEach(n => NOTIF_READ.add(n.id));
+  renderNotifs();
+  // Update bell badge
+  const badge = document.getElementById('notif-badge');
+  if (badge) badge.style.display = 'none';
+}
+
+// Update bell badge count
+function updateNotifBadge() {
+  const unread = MOCK_NOTIFS.filter(n => !NOTIF_READ.has(n.id)).length;
+  const badge = document.getElementById('notif-badge');
+  if (badge) { badge.textContent = unread; badge.style.display = unread ? 'flex' : 'none'; }
+}
+
+/* ══ AGENT-TO-AGENT CHAT ══════════════════════════════ */
+const CAFSA_AGENTS = [
+  { initials:'RM', name:'Rodolfo Méndez', role:'Ejecutivo Senior · Crédito', color:'#1A4A8B' },
+  { initials:'MV', name:'María V.',       role:'Ejecutivo · Siniestros',     color:'#7A4A04' },
+  { initials:'CR', name:'Carlos R.',      role:'Coordinador · Flotillas',     color:'#1E5C08' },
+];
+
+const AGENT_CONVOS = {}; // per-ticket agent conversations
+let currentAgentKey = '';
+
+function openAgentChat(agentInitials, ticketId, ticketTitle) {
+  const agent = CAFSA_AGENTS.find(a => a.initials === agentInitials) || CAFSA_AGENTS[0];
+  currentAgentKey = `${ticketId}-${agentInitials}`;
+
+  document.getElementById('ag-av').textContent = agent.initials;
+  document.getElementById('ag-av').style.background = agent.color;
+  document.getElementById('ag-name').textContent = agent.name;
+  document.getElementById('ag-role').textContent = agent.role;
+  document.getElementById('ag-ctx-text').textContent = `Ticket ${ticketId}: ${ticketTitle || 'consulta'}`;
+  document.getElementById('agent-chat-overlay').style.display = 'flex';
+
+  if (!AGENT_CONVOS[currentAgentKey]) {
+    AGENT_CONVOS[currentAgentKey] = [
+      { role:'them', text:`Hola, ¿en qué puedo ayudarte con el ticket ${ticketId}?`, time: new Date().toLocaleTimeString('es-CR',{hour:'2-digit',minute:'2-digit'}) }
+    ];
+  }
+  renderAgentMsgs();
+}
+
+function openAgentChatFromTicket() {
+  if (!selectedCafsaTicket) return;
+  const t = MOCK_TICKETS.find(x => x.id === selectedCafsaTicket);
+  if (!t) return;
+  // Pick agent based on dept
+  const deptAgent = { 'Crédito':'RM','Cobro':'MV','Flotilla':'CR','Siniestros':'MV','KYC':'CR' };
+  const agentInitials = deptAgent[t.dept] || 'RM';
+  openAgentChat(agentInitials, t.id, t.title);
+}
+
+function closeAgentChat() {
+  document.getElementById('agent-chat-overlay').style.display = 'none';
+}
+
+function renderAgentMsgs() {
+  const container = document.getElementById('agent-chat-msgs');
+  const msgs = AGENT_CONVOS[currentAgentKey] || [];
+  container.innerHTML = msgs.map(m => {
+    const isMe = m.role === 'me';
+    const ag = CAFSA_AGENTS.find(a => a.name === m.agentName) || CAFSA_AGENTS[0];
+    return `<div class="agent-msg ${isMe?'me':''}">
+      <div class="agent-av" style="background:${isMe?'#CC0000':ag.color||'#555'}">${isMe?'MA':ag.initials||'?'}</div>
+      <div class="agent-bubble ${isMe?'me':'them'}">${m.text}<small>${m.time}</small></div>
+    </div>`;
+  }).join('');
+  container.scrollTop = container.scrollHeight;
+}
+
+function sendAgentMsg() {
+  const input = document.getElementById('agent-chat-input');
+  const text = input?.value.trim();
+  if (!text || !currentAgentKey) return;
+  input.value = '';
+  const now = new Date().toLocaleTimeString('es-CR',{hour:'2-digit',minute:'2-digit'});
+  AGENT_CONVOS[currentAgentKey].push({ role:'me', text, time: now });
+  renderAgentMsgs();
+  // Simulate reply after 1.2s
+  setTimeout(() => {
+    const replies = [
+      'Entendido, lo reviso de inmediato.',
+      'Ya verifiqué el expediente. Le confirmo en unos minutos.',
+      'El cliente está siendo atendido. ¿Necesitás algo más?',
+      'Procedo con la gestión. Te mantengo al tanto.',
+      'Correcto, ya actualicé la bitácora del ticket.',
+    ];
+    const reply = replies[Math.floor(Math.random() * replies.length)];
+    const key = currentAgentKey;
+    if (AGENT_CONVOS[key]) {
+      AGENT_CONVOS[key].push({ role:'them', text: reply, time: new Date().toLocaleTimeString('es-CR',{hour:'2-digit',minute:'2-digit'}), agentName: document.getElementById('ag-name').textContent });
+      renderAgentMsgs();
+    }
+  }, 1200);
+}
+
+// Init notif badge on load
+document.addEventListener('DOMContentLoaded', () => setTimeout(updateNotifBadge, 500));
 </script>
 
 <!-- ══ VISITOR GATE MODAL ═══════════════════════════ -->
