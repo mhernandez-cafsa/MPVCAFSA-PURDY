@@ -1491,7 +1491,7 @@ body{font-family:'Poppins',sans-serif;background:#fff;color:var(--text);min-heig
         <div class="card" style="margin-bottom:24px;overflow:hidden">
           <!-- Características header (collapsible) -->
           <div class="cmp-section-bar" id="cmp-feat-bar" style="display:grid;cursor:pointer"
-               onclick="toggleCmpSection('feat-body','feat-chevron')">
+               onclick="toggleCmpSection('cmp-feat-body','feat-chevron')">
           </div>
           <div id="cmp-feat-body" style="overflow:hidden;transition:max-height .35s ease"></div>
 
@@ -2528,114 +2528,120 @@ function toggleCmpSection(bodyId, chevronId) {
 }
 
 function buildVsChart(cars) {
-  // Remove old chart if any
   const oldChart = document.getElementById('vs-price-chart');
   if (oldChart) oldChart.remove();
 
-  const tc = parseFloat(document.getElementById('cmp-tc')?.value) || 521;
-  const meses = parseInt(document.getElementById('plazo-sel')?.value) || 60;
+  const tc     = parseFloat(document.getElementById('cmp-tc')?.value) || 521;
+  const meses  = parseInt(document.getElementById('plazo-sel')?.value) || 60;
   const primaP = parseInt(document.getElementById('prima-sel')?.value) || 20;
+  const CAR_COLORS = ['#CC0000','#1E5C08','#7A4A04','#1A4A8B'];
 
-  // Colors per car
-  const CAR_COLORS = ['#CC0000','#1E5C08','#7A4A04','#1A4A8B','#6B0000'];
-
-  // Compute best cuota (AOFF) per car
   function cuota(usd) {
-    const pv = usd * (1 - primaP/100);
-    const r = 0.085/12;
-    const res = pv * 0.20;
+    const pv = usd*(1-primaP/100), r = 0.085/12, res = pv*0.20;
     return Math.round((pv*r - res*r/Math.pow(1+r,meses))/(1-Math.pow(1+r,-meses)));
   }
 
-  const maxPrice = Math.max(...cars.map(c => c.usd));
-  const maxCuota = Math.max(...cars.map(c => cuota(c.usd)));
+  const prices = cars.map(c=>c.usd);
+  const cuotas = cars.map(c=>cuota(c.usd));
+  const maxPrice = Math.max(...prices);
+  const maxCuota = Math.max(...cuotas);
 
-  const BAR_H = 160;
-  const BAR_W = 90;
-  const GAP   = 24;
-  const LABEL_W = 90;
-  const chartW = LABEL_W + cars.length * (BAR_W * 2 + GAP + 20) + 20;
-  const chartH = BAR_H + 80;
+  // Layout: two groups side by side — Precios | Cuotas
+  // Each group has one bar per car
+  const BAR_H  = 160;
+  const BAR_W  = 70;
+  const GAP_IN = 8;   // gap between bars within a group
+  const GAP_GR = 48;  // gap between the two groups
+  const PAD_L  = 50;
+  const PAD_R  = 20;
+  const groupW = cars.length * BAR_W + (cars.length-1)*GAP_IN;
+  const totalW = PAD_L + groupW + GAP_GR + groupW + PAD_R;
+  const totalH = BAR_H + 100;
 
-  // Build SVG bars — two bars per car: price + cuota
   let svgBars = '';
-  cars.forEach((car, i) => {
-    const x = LABEL_W + i * (BAR_W * 2 + GAP + 20);
-    const priceH = Math.round((car.usd / maxPrice) * BAR_H);
-    const cuotaH = Math.round((cuota(car.usd) / maxCuota) * BAR_H);
-    const col = CAR_COLORS[i % CAR_COLORS.length];
-    const colLight = col + '55';
 
-    // Price bar
+  // ── Group 1: Precios ─────────────────────────────────
+  const g1x = PAD_L;
+  cars.forEach((car, i) => {
+    const col = CAR_COLORS[i % CAR_COLORS.length];
+    const x   = g1x + i*(BAR_W + GAP_IN);
+    const h   = Math.max(4, Math.round((car.usd/maxPrice)*BAR_H));
+    const y   = BAR_H - h + 10;
     svgBars += `
-      <rect x="${x}" y="${BAR_H - priceH + 10}" width="${BAR_W - 4}" height="${priceH}"
-            fill="${col}" rx="4" opacity="0.9"/>
-      <text x="${x + (BAR_W-4)/2}" y="${BAR_H - priceH + 4}" text-anchor="middle"
+      <rect x="${x}" y="${y}" width="${BAR_W-2}" height="${h}" fill="${col}" rx="4"/>
+      <text x="${x+(BAR_W-2)/2}" y="${y-5}" text-anchor="middle"
             font-size="10" font-weight="700" fill="${col}" font-family="Poppins,sans-serif">
         $${car.usd.toLocaleString()}
-      </text>`;
-
-    // Cuota bar
-    svgBars += `
-      <rect x="${x + BAR_W}" y="${BAR_H - cuotaH + 10}" width="${BAR_W - 4}" height="${cuotaH}"
-            fill="${col}" rx="4" opacity="0.5"/>
-      <text x="${x + BAR_W + (BAR_W-4)/2}" y="${BAR_H - cuotaH + 4}" text-anchor="middle"
-            font-size="10" font-weight="700" fill="${col}" font-family="Poppins,sans-serif">
-        $${cuota(car.usd).toLocaleString()}
-      </text>`;
-
-    // Car label
-    svgBars += `
-      <text x="${x + BAR_W - 2}" y="${BAR_H + 26}" text-anchor="middle"
-            font-size="11" font-weight="700" fill="#1A0000" font-family="Poppins,sans-serif">
+      </text>
+      <text x="${x+(BAR_W-2)/2}" y="${BAR_H+22}" text-anchor="middle"
+            font-size="10" font-weight="600" fill="${col}" font-family="Poppins,sans-serif">
         ${car.name}
       </text>`;
+  });
+  // Group 1 label
+  svgBars += `<text x="${g1x+groupW/2}" y="${BAR_H+44}" text-anchor="middle"
+    font-size="11" font-weight="700" fill="#888" font-family="Poppins,sans-serif">💵 Precio total</text>`;
 
-    // Sub labels
+  // ── Group 2: Cuotas ───────────────────────────────────
+  const g2x = PAD_L + groupW + GAP_GR;
+  cars.forEach((car, i) => {
+    const col = CAR_COLORS[i % CAR_COLORS.length];
+    const x   = g2x + i*(BAR_W + GAP_IN);
+    const h   = Math.max(4, Math.round((cuotas[i]/maxCuota)*BAR_H));
+    const y   = BAR_H - h + 10;
     svgBars += `
-      <text x="${x + (BAR_W-4)/2}" y="${BAR_H + 42}" text-anchor="middle"
-            font-size="9" fill="${col}" font-family="Poppins,sans-serif">Precio</text>
-      <text x="${x + BAR_W + (BAR_W-4)/2}" y="${BAR_H + 42}" text-anchor="middle"
-            font-size="9" fill="${col}" font-family="Poppins,sans-serif">Cuota/mes</text>`;
+      <rect x="${x}" y="${y}" width="${BAR_W-2}" height="${h}" fill="${col}" rx="4" opacity="0.65"/>
+      <text x="${x+(BAR_W-2)/2}" y="${y-5}" text-anchor="middle"
+            font-size="10" font-weight="700" fill="${col}" font-family="Poppins,sans-serif">
+        $${cuotas[i].toLocaleString()}
+      </text>
+      <text x="${x+(BAR_W-2)/2}" y="${BAR_H+22}" text-anchor="middle"
+            font-size="10" font-weight="600" fill="${col}" font-family="Poppins,sans-serif">
+        ${car.name}
+      </text>`;
+  });
+  svgBars += `<text x="${g2x+groupW/2}" y="${BAR_H+44}" text-anchor="middle"
+    font-size="11" font-weight="700" fill="#888" font-family="Poppins,sans-serif">📅 Cuota/mes (AOFF)</text>`;
+
+  // ── Divider between groups ────────────────────────────
+  const divX = PAD_L + groupW + GAP_GR/2;
+  svgBars += `<line x1="${divX}" y1="0" x2="${divX}" y2="${BAR_H+10}"
+    stroke="#E0E0E0" stroke-width="1.5" stroke-dasharray="4 3"/>`;
+
+  // ── Guide lines ───────────────────────────────────────
+  let guides = '';
+  [25,50,75,100].forEach(pct => {
+    const y = BAR_H - (pct/100)*BAR_H + 10;
+    guides += `<line x1="${PAD_L-10}" y1="${y}" x2="${totalW-PAD_R}" y2="${y}"
+                stroke="#F0F0F0" stroke-width="1"/>
+               <text x="${PAD_L-14}" y="${y+3}" text-anchor="end" font-size="8"
+                fill="#CCC" font-family="Poppins,sans-serif">${pct}%</text>`;
   });
 
-  // Legend
-  const legendItems = ['Precio total (USD)','Cuota AOFF ${meses}m (USD)'];
-  let legend = `
-    <rect x="10" y="4" width="12" height="12" fill="#CC0000" rx="2" opacity="0.9"/>
-    <text x="26" y="14" font-size="10" fill="#444" font-family="Poppins,sans-serif">Precio total (USD)</text>
-    <rect x="150" y="4" width="12" height="12" fill="#CC0000" rx="2" opacity="0.5"/>
-    <text x="166" y="14" font-size="10" fill="#444" font-family="Poppins,sans-serif">Cuota AOFF ${meses}m</text>`;
+  // ── Legend ────────────────────────────────────────────
+  let legend = '';
+  cars.forEach((car,i) => {
+    const col = CAR_COLORS[i % CAR_COLORS.length];
+    legend += `<rect x="${i*120}" y="0" width="12" height="12" fill="${col}" rx="2"/>
+               <text x="${i*120+16}" y="10" font-size="10" fill="#444" font-family="Poppins,sans-serif">${car.name}</text>`;
+  });
 
   const chartHtml = `
   <div id="vs-price-chart" style="background:#fff;border:1px solid var(--border);border-radius:14px;
        padding:18px;margin-bottom:18px;overflow-x:auto">
     <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:14px">
-      📊 Comparativa: Precio vs Cuota mensual AOFF · ${meses} meses · Prima ${primaP}%
+      📊 Precio vs Cuota mensual · ${meses} meses · Prima ${primaP}% · Plan AOFF
     </div>
-    <svg viewBox="0 0 ${chartW} ${chartH + 20}" style="width:100%;min-width:${Math.min(chartW,360)}px;overflow:visible">
-      <!-- Horizontal guide lines -->
-      ${[25,50,75,100].map(pct => {
-        const y = BAR_H - (pct/100)*BAR_H + 10;
-        return `<line x1="${LABEL_W}" y1="${y}" x2="${chartW-10}" y2="${y}"
-                      stroke="#F0F0F0" stroke-width="1"/>
-                <text x="${LABEL_W-4}" y="${y+4}" text-anchor="end" font-size="8" fill="#CCC"
-                      font-family="Poppins,sans-serif">${pct}%</text>`;
-      }).join('')}
-      <!-- Bars -->
+    <svg viewBox="0 0 ${totalW} ${totalH}" style="width:100%;min-width:320px;overflow:visible">
+      ${guides}
       ${svgBars}
-      <!-- Legend -->
-      <g transform="translate(${LABEL_W},${BAR_H + 54})">${legend}</g>
+      <g transform="translate(${PAD_L},${BAR_H+62})">${legend}</g>
     </svg>
   </div>`;
 
-  // Insert before the fin-section
   const finSection = document.querySelector('.fin-section');
   if (finSection) finSection.insertAdjacentHTML('beforebegin', chartHtml);
-  else {
-    const results = document.getElementById('cmp-results');
-    if (results) results.insertAdjacentHTML('beforeend', chartHtml);
-  }
+  else document.getElementById('cmp-results')?.insertAdjacentHTML('beforeend', chartHtml);
 }
 
 /* ── Financing ────────────────────────────────────── */
