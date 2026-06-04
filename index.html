@@ -666,11 +666,11 @@ body{font-family:'Poppins',sans-serif;background:#fff;color:var(--text);min-heig
   text-align: center; margin-bottom: 28px; max-width: 540px;
 }
 .ws-profiles {
-  display: grid; grid-template-columns: repeat(4, 1fr);
-  gap: 14px; max-width: 1060px; width: 94%;
+  display: grid; grid-template-columns: repeat(5, 1fr);
+  gap: 12px; max-width: 1200px; width: 96%;
 }
 .ws-profile-card-juridico {
-  grid-column: 2 / 4; /* center the 5th card spanning 2 of 4 cols */
+  grid-column: auto; /* normal flow — 5th card in same row */
 }
 .ws-profile-card {
   background: rgba(255,255,255,0.07);
@@ -1156,7 +1156,7 @@ body{font-family:'Poppins',sans-serif;background:#fff;color:var(--text);min-heig
   <div class="ws-profiles" style="grid-template-columns:repeat(5,1fr)">
 
     <!-- 1. Genérico / Visitante -->
-    <div class="ws-profile-card" onclick="openVisitorGate()">
+    <div class="ws-profile-card" onclick="enterPortal('generico')">
       <div class="ws-profile-icon" style="background:rgba(255,255,255,0.12)">🔍</div>
       <div class="ws-profile-name">Visitante</div>
       <div class="ws-profile-desc">Comparo vehículos y cotizo sin necesidad de registrarme</div>
@@ -1218,7 +1218,7 @@ body{font-family:'Poppins',sans-serif;background:#fff;color:var(--text);min-heig
   </div>
 
     <!-- 5. Cliente Jurídico -->
-    <div class="ws-profile-card ws-profile-card-juridico" onclick="enterPortal('juridico')" style="border-color:rgba(255,220,150,0.4);max-width:300px;justify-self:center">
+    <div class="ws-profile-card ws-profile-card-juridico" onclick="enterPortal('juridico')" style="border-color:rgba(255,220,150,0.4)">
       <div class="ws-recommended-tag" style="background:rgba(255,200,80,0.9);color:#5C3A00">🏢 Empresa</div>
       <div class="ws-profile-icon" style="background:rgba(255,255,255,0.12)">🏢</div>
       <div class="ws-profile-name">Cliente CAFSA Jurídico</div>
@@ -1307,6 +1307,10 @@ body{font-family:'Poppins',sans-serif;background:#fff;color:var(--text);min-heig
     <div class="sb-item" id="sn-op" onclick="goModule('operacion',10)" style="display:none">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
       Su Operación
+    </div>
+    <div class="sb-item" id="sn-flotilla" onclick="goModule('flotilla',11)" style="display:none">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+      Flotillas
     </div>
     <div class="sb-item" id="sn-reg" onclick="goModule('registro',2)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -1936,7 +1940,103 @@ body{font-family:'Poppins',sans-serif;background:#fff;color:var(--text);min-heig
 
 
     <!-- ════════════════════════════════════════════════
-         MÓDULO: OTROS FINANCIAMIENTOS
+         MÓDULO: FLOTILLAS
+    ════════════════════════════════════════════════════ -->
+    <section id="mod-flotilla" class="module">
+      <div class="page-title">🚛 Gestión de Flotillas</div>
+      <div class="page-sub">Administre vehículos asignados a colaboradores y empresas asociadas</div>
+
+      <div class="stats-row" style="margin-bottom:20px">
+        <div class="stat-card"><div class="stat-val">12</div><div class="stat-lbl">Vehículos activos</div></div>
+        <div class="stat-card"><div class="stat-val">8</div><div class="stat-lbl">Colaboradores</div></div>
+        <div class="stat-card"><div class="stat-val">3</div><div class="stat-lbl">Empresas asociadas</div></div>
+        <div class="stat-card"><div class="stat-val">2</div><div class="stat-lbl">Disponibles</div></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:20px">
+        <div class="card">
+          <div class="card-head" style="display:flex;align-items:center;justify-content:space-between">
+            <span>🚗 Vehículos por Colaborador</span>
+            <button class="btn btn-primary btn-sm">+ Asignar</button>
+          </div>
+          <div class="card-body" style="padding:0">
+            <table class="data-table" style="width:100%">
+              <thead><tr><th>Colaborador</th><th>Vehículo</th><th>Placa</th><th>Estado</th></tr></thead>
+              <tbody>
+                <tr><td>Carlos Mora</td><td>RAV4 2024</td><td>HBK-123</td><td><span class="badge badge-green">Activo</span></td></tr>
+                <tr><td>Ana Jiménez</td><td>Corolla 2023</td><td>GTC-456</td><td><span class="badge badge-green">Activo</span></td></tr>
+                <tr><td>Luis Soto</td><td>Hilux 2024</td><td>JMR-789</td><td><span class="badge badge-yellow">En revisión</span></td></tr>
+                <tr><td>María Rojas</td><td>Camry 2023</td><td>FKP-321</td><td><span class="badge badge-green">Activo</span></td></tr>
+                <tr><td>Diego Castro</td><td>Rush 2024</td><td>HNT-654</td><td><span class="badge badge-red">Vencido</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head" style="display:flex;align-items:center;justify-content:space-between">
+            <span>🏢 Empresas Asociadas</span>
+            <button class="btn btn-primary btn-sm">+ Empresa</button>
+          </div>
+          <div class="card-body" style="padding:0">
+            <table class="data-table" style="width:100%">
+              <thead><tr><th>Empresa</th><th>Cédula Jurídica</th><th>Vehículos</th><th>Estado</th></tr></thead>
+              <tbody>
+                <tr><td>Constructora Silva S.A.</td><td>3-101-554321</td><td>5</td><td><span class="badge badge-green">Activa</span></td></tr>
+                <tr><td>Distribuidora Norte Ltda.</td><td>3-102-112233</td><td>4</td><td><span class="badge badge-green">Activa</span></td></tr>
+                <tr><td>Servicios Técnicos CR S.A.</td><td>3-101-998877</td><td>3</td><td><span class="badge badge-yellow">Revisión KYC</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:18px">
+        <div class="card-head">📅 Próximos Vencimientos y Mantenimientos</div>
+        <div class="card-body" style="padding:0">
+          <table class="data-table" style="width:100%">
+            <thead><tr><th>Vehículo</th><th>Placa</th><th>Tipo</th><th>Fecha</th><th>Responsable</th><th>Acción</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>Hilux 2024</td><td>JMR-789</td>
+                <td><span class="badge badge-yellow">Revisión técnica</span></td>
+                <td>15 Jun 2026</td><td>Luis Soto</td>
+                <td><button class="btn btn-ghost btn-sm">Agendar</button></td>
+              </tr>
+              <tr>
+                <td>Rush 2024</td><td>HNT-654</td>
+                <td><span class="badge badge-red">Marchamo</span></td>
+                <td>01 Jul 2026</td><td>Diego Castro</td>
+                <td><button class="btn btn-gold btn-sm">Tramitar</button></td>
+              </tr>
+              <tr>
+                <td>RAV4 2024</td><td>HBK-123</td>
+                <td><span class="badge" style="background:#E4F4DA;color:#1E5C08">Mantenimiento</span></td>
+                <td>20 Jul 2026</td><td>Carlos Mora</td>
+                <td><button class="btn btn-ghost btn-sm">Agendar</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">🛡 KYC Empresarial · Conozca a su Cliente</div>
+        <div class="card-body">
+          <div style="background:#FFF8F8;border-radius:10px;padding:14px 16px;border-left:3px solid #CC0000;margin-bottom:14px;font-size:13px;color:#444;line-height:1.6">
+            Cada empresa asociada debe completar el proceso KYC Jurídico: cédula jurídica,
+            representante legal, estados financieros y documentos de la flotilla.
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-primary" onclick="goModule('kyc',3)">🛡 Iniciar KYC Empresarial</button>
+            <button class="btn btn-ghost">📄 Documentos pendientes</button>
+            <button class="btn btn-ghost">📊 Estado por empresa</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!--         MÓDULO: OTROS FINANCIAMIENTOS
     ════════════════════════════════════════════════════ -->
     <section id="mod-financiamientos" class="module">
       <div class="page-title">Otros Financiamientos</div>
@@ -2820,9 +2920,9 @@ function buildTrendChart(cars) {
 }
 
 /* ── Navigation ───────────────────────────────────── */
-const MODS = ['autogestion','comparar','registro','kyc','siniestros','catalogo','financiamientos','ejecutivo','tracking-purdy','mesa-cafsa','operacion'];
-const TB   = ['tn-auto','tn-comp','tn-reg','tn-kyc','tn-sin','tn-cat','tn-fin','tn-eje','tn-trk','tn-mesa','tn-op'];
-const SB   = ['sn-auto','sn-comp','sn-reg','sn-kyc','sn-sin','sn-cat','sn-fin','sn-eje','sn-trk','sn-mesa','sn-op'];
+const MODS = ['autogestion','comparar','registro','kyc','siniestros','catalogo','financiamientos','ejecutivo','tracking-purdy','mesa-cafsa','operacion','flotilla'];
+const TB   = ['tn-auto','tn-comp','tn-reg','tn-kyc','tn-sin','tn-cat','tn-fin','tn-eje','tn-trk','tn-mesa','tn-op','tn-flotilla'];
+const SB   = ['sn-auto','sn-comp','sn-reg','sn-kyc','sn-sin','sn-cat','sn-fin','sn-eje','sn-trk','sn-mesa','sn-op','sn-flotilla'];
 
 function goModule(id, idx) {
   MODS.forEach(m => document.getElementById('mod-'+m).classList.remove('active'));
@@ -3122,12 +3222,12 @@ const PROFILE_NAVS = {
   },
   cliente: {
     label: '👤 Cliente',
-    show:  ['autogestion','operacion','comparar','registro','kyc','siniestros','catalogo','ejecutivo','financiamientos'],
+    show:  ['autogestion','operacion','flotilla','comparar','registro','kyc','siniestros','catalogo','ejecutivo','financiamientos'],
     hide:  ['tracking-purdy','mesa-cafsa'],
     first: 'autogestion',
     firstIdx: 0,
     sidebar: {
-      show: ['sn-auto','sn-op','sn-comp','sn-reg','sn-kyc','sn-sin','sn-cat','sn-eje','sn-fin'],
+      show: ['sn-auto','sn-op','sn-flotilla','sn-comp','sn-reg','sn-kyc','sn-sin','sn-cat','sn-eje','sn-fin'],
       hide: []
     }
   },
@@ -3144,12 +3244,12 @@ const PROFILE_NAVS = {
   },
   juridico: {
     label: '🏢 Cliente CAFSA Jurídico',
-    show:  ['autogestion','operacion','comparar','registro','kyc','siniestros','catalogo','ejecutivo','financiamientos'],
+    show:  ['autogestion','operacion','flotilla','comparar','registro','kyc','siniestros','catalogo','ejecutivo','financiamientos'],
     hide:  ['tracking-purdy','mesa-cafsa'],
     first: 'autogestion',
     firstIdx: 0,
     sidebar: {
-      show: ['sn-auto','sn-op','sn-comp','sn-reg','sn-kyc','sn-sin','sn-cat','sn-eje','sn-fin'],
+      show: ['sn-auto','sn-op','sn-flotilla','sn-comp','sn-reg','sn-kyc','sn-sin','sn-cat','sn-eje','sn-fin'],
       hide: ['sn-trk','sn-mesa']
     },
     isJuridico: true
