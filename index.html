@@ -4312,26 +4312,142 @@ function pugShowTyping(delayMs, callback) {
   }, delayMs);
 }
 
-function pugGetReply(text) {
-  const t = text.toLowerCase();
-  if (t.includes('cuota') || t.includes('pago') || t.includes('venc')) return PUG_REPLIES.cuota;
-  if (t.includes('rav4')) return PUG_REPLIES.rav4;
-  if (t.includes('hilux')) return PUG_REPLIES.hilux;
-  if (t.includes('vehiculo') || t.includes('vehículo') || t.includes('carro') || t.includes('auto')) return PUG_REPLIES.vehiculo;
-  if (t.includes('ejecutivo') || t.includes('asesor') || t.includes('whatsapp') || t.includes('llamar')) return PUG_REPLIES.ejecutivo;
-  if (t.includes('siniestro') || t.includes('choque') || t.includes('accidente')) return PUG_REPLIES.siniestro;
-  if (t.includes('kyc') || t.includes('documento') || t.includes('identidad')) return PUG_REPLIES.kyc;
-  if (t.includes('tramite') || t.includes('trámite') || t.includes('carta') || t.includes('finiquito')) return PUG_REPLIES.tramite;
-  if (t.includes('hola') || t.includes('buenas') || t.includes('hello') || t.includes('hi')) return PUG_REPLIES.hola;
-  return PUG_REPLIES.default;
-}
+// ── Historial de conversación para contexto ──
+let pugConversationHistory = [];
 
 function pugUpdateQuickReplies(replies) {
   const qr = document.getElementById('pugQuickReplies');
   if (!qr || !replies) { if(qr) qr.innerHTML = ''; return; }
   qr.innerHTML = replies.map(r =>
-    `<button class="pug-qr" onclick="pugSendQuick('${r}')">${r}</button>`
+    `<button class="pug-qr" onclick="pugSendQuick('${r.replace(/'/g, "\\'")}')">${r}</button>`
   ).join('');
+}
+
+// Llama a la API de Claude para generar la respuesta del bot
+async function pugGetAIReply(userMessage) {
+  const SYSTEM_PROMPT = `Eres PugBot 🐾, el asistente virtual oficial de CAFSA · Grupo Purdy Motor en Costa Rica.
+Tu personalidad: amigable, entusiasta, profesional, usas emojis de perro (🐾, 🐶) y del tema (🚗, 💳, 📋).
+Respondes SIEMPRE en español costarricense.
+
+CONTEXTO DEL PORTAL CAFSA:
+- CAFSA es la financiera del Grupo Purdy Motor (concesionario Toyota en Costa Rica)
+- Productos: financiamiento vehicular, arrendamiento (AOFF/AONN), pre-aprobaciones KYC
+- Vehículos disponibles: Toyota RAV4 2025 ($38,500), Hilux 4x4 ($44,900), Corolla, Highlander, Fortuner, Tundra
+- Cuotas desde ₡135,000/mes a 60 meses con prima del 20%
+- Planes: AOFF (Arrendamiento con opción a compra), AONN (Arrendamiento operativo)
+- Tasas de interés: competitivas, en colones o dólares
+- Ejecutivo disponible: Rodolfo Méndez — WhatsApp 8786-3113, Teléfono 2200-CAFSA
+- KYC (Conozca a su Cliente): proceso de verificación de identidad y perfil financiero
+- Módulos del portal: Comparador de vehículos, Financiamientos, KYC/Registro, Siniestros, Catálogo de trámites
+
+MÓDULOS DEL PORTAL (para navegación):
+- "comparar" → Comparador de vehículos
+- "financiamientos" → Tabla de financiamiento  
+- "kyc" → Registro KYC
+- "siniestros" → Reporte de siniestros
+- "catalogo" → Catálogo de trámites
+- "ejecutivo" → Perfil del ejecutivo
+
+REGLAS:
+1. Responde de forma concisa (máximo 3 párrafos cortos)
+2. Usa HTML simple para dar formato: <strong> para énfasis, <br> para saltos de línea
+3. Al final de tu respuesta JSON, incluye entre 0 y 3 opciones de "quick replies" relevantes
+4. Si el usuario pregunta por un ejecutivo, da el contacto de Rodolfo Méndez
+5. Si preguntan por un módulo específico, sugiérelo como quick reply con el prefijo "NAVEGAR:"
+6. Mantén la personalidad de PugBot en todo momento
+
+FORMATO DE RESPUESTA: Debes responder ÚNICAMENTE con JSON válido, sin backticks ni texto adicional:
+{"reply": "tu respuesta en HTML", "quickReplies": ["opción 1", "opción 2"]}
+
+Para quick replies que navegan a un módulo usa este formato: "NAVEGAR:nombre_modulo:Texto del botón"
+Ejemplo: "NAVEGAR:kyc:Ir a KYC 📋"`;
+
+  pugConversationHistory.push({ role: 'user', content: userMessage });
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: SYSTEM_PROMPT,
+        messages: pugConversationHistory
+      })
+    });
+
+    const data = await response.json();
+    const rawText = data.content?.[0]?.text || '{}';
+
+    let parsed;
+    try {
+      const clean = rawText.replace(/```json|```/g, '').trim();
+      parsed = JSON.parse(clean);
+    } catch(e) {
+      parsed = { reply: rawText, quickReplies: ['Hablar con ejecutivo 👔'] };
+    }
+
+    pugConversationHistory.push({ role: 'assistant', content: parsed.reply || rawText });
+
+    // Limitar historial a las últimas 10 interacciones
+    if (pugConversationHistory.length > 20) {
+      pugConversationHistory = pugConversationHistory.slice(-20);
+    }
+
+    return parsed;
+  } catch(err) {
+    console.error('Error API PugBot:', err);
+    pugConversationHistory.pop(); // Remover el mensaje fallido
+    return {
+      reply: '¡Ay woof! 🐾 Tuve un problemita técnico. Por favor intenta de nuevo o contáctanos al <strong>2200-CAFSA</strong>.',
+      quickReplies: ['Hablar con ejecutivo 👔', 'Reintentar 🔄']
+    };
+  }
+}
+
+async function pugProcessMessage(text) {
+  // Verificar si es una acción de navegación directa
+  const actionKey = text.toLowerCase().replace(/[🚗💳👔🚨📋📊⚡🚀📱📞]/g,'').trim();
+  if (ACTION_MAP[actionKey]) {
+    pugShowTyping(600, () => {
+      pugAddMsg('bot', '¡Abriendo el módulo ahora! 🐾');
+      setTimeout(() => ACTION_MAP[actionKey](), 600);
+    });
+    return;
+  }
+
+  // Mostrar typing mientras espera la API
+  const container = document.getElementById('pugMessages');
+  const typingDiv = document.createElement('div');
+  typingDiv.className = 'pug-msg bot';
+  typingDiv.id = 'pugTypingAI';
+  typingDiv.innerHTML = `
+    <img src="${PUG_IMG}" class="pug-msg-av" alt="PugBot" style="object-position:top">
+    <div class="pug-bubble bot"><div class="pug-typing-dots"><span></span><span></span><span></span></div></div>`;
+  container.appendChild(typingDiv);
+  container.scrollTop = container.scrollHeight;
+
+  const result = await pugGetAIReply(text);
+
+  const typingEl = document.getElementById('pugTypingAI');
+  if (typingEl) typingEl.remove();
+
+  pugAddMsg('bot', result.reply || '¡Woof! 🐾 No pude procesar tu consulta.');
+
+  // Procesar quick replies — detectar si son de navegación
+  const qrs = result.quickReplies || [];
+  const qrContainer = document.getElementById('pugQuickReplies');
+  if (qrContainer) {
+    qrContainer.innerHTML = qrs.map(r => {
+      if (r.startsWith('NAVEGAR:')) {
+        const parts = r.split(':');
+        const modulo = parts[1];
+        const label = parts[2] || modulo;
+        return `<button class="pug-qr" onclick="goModule('${modulo}',0); togglePugChat();">${label}</button>`;
+      }
+      return `<button class="pug-qr" onclick="pugSendQuick('${r.replace(/'/g, "\\'")}')">${r}</button>`;
+    }).join('');
+  }
 }
 
 function pugSend() {
@@ -4341,41 +4457,13 @@ function pugSend() {
   input.value = '';
   pugAddMsg('user', text);
   document.getElementById('pugQuickReplies').innerHTML = '';
-
-  const actionKey = text.toLowerCase().replace(/[🚗💳👔🚨]/g,'').trim();
-  if (ACTION_MAP[actionKey]) {
-    pugShowTyping(600, () => {
-      pugAddMsg('bot', '¡Abriendo el módulo ahora! 🐾');
-      setTimeout(() => ACTION_MAP[actionKey](), 600);
-    });
-    return;
-  }
-
-  const [reply, quickReplies] = pugGetReply(text);
-  pugShowTyping(900, () => {
-    pugAddMsg('bot', reply);
-    pugUpdateQuickReplies(quickReplies);
-  });
+  pugProcessMessage(text);
 }
 
 function pugSendQuick(text) {
   pugAddMsg('user', text);
   document.getElementById('pugQuickReplies').innerHTML = '';
-
-  const actionKey = text.toLowerCase().replace(/[🚗💳👔🚨]/g,'').trim();
-  if (ACTION_MAP[actionKey]) {
-    pugShowTyping(600, () => {
-      pugAddMsg('bot', '¡Abriendo el módulo ahora! 🐾');
-      setTimeout(() => ACTION_MAP[actionKey](), 600);
-    });
-    return;
-  }
-
-  const [reply, quickReplies] = pugGetReply(text);
-  pugShowTyping(900, () => {
-    pugAddMsg('bot', reply);
-    pugUpdateQuickReplies(quickReplies);
-  });
+  pugProcessMessage(text);
 }
 
 /* Floating speech bubble cycle */
@@ -4948,21 +5036,95 @@ function negSetQR(replies) {
   ).join('');
 }
 
-function negProcessReply(text) {
-  const [reply, qrs, action] = negGetReply(text);
-  negShowTyping(1000, () => {
-    if (action === 'agent') {
-      negAddMsg('bot', reply);
-      setTimeout(negShowAgentCard, 400);
-    } else if (action === 'kyc') {
-      negAddMsg('bot', reply);
-      setTimeout(() => { closeNegotiate(); goModule('kyc',3); }, 800);
-    } else {
-      negAddMsg('bot', reply);
+// ── Historial del chat de negociación ──
+let negConversationHistory = [];
+
+async function negGetAIReply(userMessage) {
+  const NEG_SYSTEM = `Eres el asistente de negociación de CAFSA · Grupo Purdy Motor (Costa Rica).
+Tu rol: ayudar al cliente a encontrar el mejor plan de financiamiento para su vehículo Toyota.
+Responde en español costarricense, profesional pero cercano. Usa HTML simple para formato.
+
+CONTEXTO:
+- El cliente está en el módulo de "Negocia tu crédito"
+- Vehículos: RAV4 2025 ($38,500), Hilux ($44,900), Corolla ($24,900), Highlander ($55,000), Fortuner ($48,000)
+- Planes AOFF: 36, 48, 60 meses. Tasas en ₡ o USD. Prima sugerida: 20-30%.
+- Cuotas aprox: RAV4 60m 20% prima = ₡215,000/mes; Hilux 60m = ₡242,000/mes
+- Ejecutivo: Rodolfo Méndez | WhatsApp: 8786-3113 | Tel: 2200-CAFSA
+- Pre-aprobación: proceso en 24 horas hábiles via portal KYC
+
+ACCIONES ESPECIALES en JSON:
+- Si el cliente quiere hablar con un ejecutivo: {"reply": "...", "action": "agent", "quickReplies": []}
+- Si el cliente quiere iniciar pre-aprobación: {"reply": "...", "action": "kyc", "quickReplies": []}
+- Respuesta normal: {"reply": "...", "quickReplies": ["opción 1", "opción 2"]}
+
+Responde ÚNICAMENTE con JSON válido sin backticks.`;
+
+  negConversationHistory.push({ role: 'user', content: userMessage });
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: NEG_SYSTEM,
+        messages: negConversationHistory
+      })
+    });
+
+    const data = await response.json();
+    const rawText = data.content?.[0]?.text || '{}';
+
+    let parsed;
+    try {
+      parsed = JSON.parse(rawText.replace(/```json|```/g, '').trim());
+    } catch(e) {
+      parsed = { reply: rawText, quickReplies: ['Hablar con ejecutivo 👔'] };
     }
-    if (qrs) negSetQR(qrs);
-    else document.getElementById('neg-qr-area').innerHTML = '';
-  });
+
+    negConversationHistory.push({ role: 'assistant', content: parsed.reply || rawText });
+    if (negConversationHistory.length > 16) negConversationHistory = negConversationHistory.slice(-16);
+
+    return parsed;
+  } catch(err) {
+    negConversationHistory.pop();
+    return { reply: 'Disculpe el inconveniente. Por favor contáctenos al <strong>2200-CAFSA</strong>.', quickReplies: ['Hablar con ejecutivo 👔'] };
+  }
+}
+
+async function negProcessReply(text) {
+  // Mostrar typing
+  const container = document.getElementById('neg-messages');
+  const img = document.getElementById('neg-pug-img');
+  const src = img ? img.src : '';
+  const typingDiv = document.createElement('div');
+  typingDiv.className = 'neg-msg bot';
+  typingDiv.id = 'negTypingAI';
+  typingDiv.innerHTML = `<img class="neg-av-img" src="${src}" alt="">
+    <div class="neg-bubble bot"><div class="neg-typing"><span></span><span></span><span></span></div></div>`;
+  container.appendChild(typingDiv);
+  container.scrollTop = container.scrollHeight;
+
+  const result = await negGetAIReply(text);
+
+  const t = document.getElementById('negTypingAI');
+  if (t) t.remove();
+
+  negAddMsg('bot', result.reply || 'Disculpe, hubo un error.');
+
+  if (result.action === 'agent') {
+    setTimeout(negShowAgentCard, 400);
+  } else if (result.action === 'kyc') {
+    setTimeout(() => { closeNegotiate(); goModule('kyc', 3); }, 800);
+  }
+
+  if (result.quickReplies && result.quickReplies.length > 0) {
+    negSetQR(result.quickReplies);
+  } else {
+    const qr = document.getElementById('neg-qr-area');
+    if (qr) qr.innerHTML = '';
+  }
 }
 
 function negSend() {
