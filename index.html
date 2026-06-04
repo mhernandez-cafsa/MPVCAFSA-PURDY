@@ -1158,6 +1158,18 @@ body{font-family:'Poppins',sans-serif;background:#0D0D0D;color:var(--text);min-h
 .neg-send:hover { background:#8B0000;transform:scale(1.08); }
 
 </style>
+
+<script>
+// ── API Key para prototipo ──────────────────────────
+(function() {
+  let key = localStorage.getItem('cafsa_api_key');
+  if (!key) {
+    key = prompt('🐾 PugBot necesita una API Key de Anthropic para funcionar:\n\nhttps://console.anthropic.com/settings/keys');
+    if (key) localStorage.setItem('cafsa_api_key', key.trim());
+  }
+  window.ANTHROPIC_API_KEY = key ? key.trim() : '';
+})();
+</script>
 </head>
 <body>
 
@@ -4369,6 +4381,7 @@ Ejemplo: "NAVEGAR:kyc:Ir a KYC 📋"`;
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'x-api-key': window.ANTHROPIC_API_KEY || '',
         'anthropic-dangerous-direct-browser-access': 'true',
         'anthropic-version': '2023-06-01'
       },
@@ -5070,6 +5083,7 @@ Responde ÚNICAMENTE con JSON válido sin backticks.`;
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'x-api-key': window.ANTHROPIC_API_KEY || '',
         'anthropic-dangerous-direct-browser-access': 'true',
         'anthropic-version': '2023-06-01'
       },
