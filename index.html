@@ -595,6 +595,8 @@ body{font-family:'Poppins',sans-serif;background:#0D0D0D;color:var(--text);min-h
 .form-group label{font-size:11px;font-weight:700;color:var(--text2);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.3px}
 .form-group input,.form-group select,.form-group textarea{width:100%;padding:9px 12px;font-family:'Poppins',sans-serif;font-size:13px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--white);color:var(--text);outline:none;transition:var(--tr)}
 .form-group input:focus,.form-group select:focus{border-color:#333;box-shadow:0 0 0 3px rgba(0,0,0,0.06)}
+.pred-narrative-loading { animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 .pred-box{background:linear-gradient(135deg,#F4F4F4,#FFF5F5);border:1px solid #FFAAAA;border-radius:var(--r-lg);padding:14px 16px;margin-top:16px}
 .pred-header{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;color:#8B0000;margin-bottom:10px}
 .pred-chips{display:flex;gap:7px;flex-wrap:wrap}
@@ -1622,9 +1624,32 @@ body{font-family:'Poppins',sans-serif;background:#0D0D0D;color:var(--text);min-h
                 <div class="form-section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>Preferencia</div>
                 <div class="form-row"><div class="form-group"><label>Producto de interés</label><select id="prod-select" onchange="updatePrediction()"><option>Vehículo nuevo</option><option>Vehículo usado</option><option>Financiamiento personal</option><option>Seguro de vida</option></select></div><div class="form-group"><label>Canal de origen</label><select><option>Asesor Purdy</option><option>Web / App</option><option>Chatbot</option><option>Campaña digital</option></select></div></div>
               </div>
-              <div class="pred-box">
-                <div class="pred-header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Predicción según perfil financiero</div>
-                <div class="pred-chips" id="pred-chips"><div class="pred-chip">🚗 Toyota Corolla 2024</div><div class="pred-chip">Cuota est. ₡185,000/mes</div><div class="pred-chip">Plazo ideal: 48–60 m</div><div class="pred-chip">Prima: 20%</div><div class="pred-chip">Seguro combo sugerido</div></div>
+              <div class="pred-box" style="border-radius:14px;overflow:hidden">
+                <div class="pred-header" style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+                  <div style="display:flex;align-items:center;gap:6px">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                    Predicción IA · Perfil financiero
+                  </div>
+                  <span style="font-size:9px;background:rgba(255,255,255,0.2);padding:2px 8px;border-radius:10px;font-weight:700">claude-sonnet</span>
+                </div>
+                <!-- AI result chips -->
+                <div class="pred-chips" id="pred-chips">
+                  <div class="pred-chip">🚗 Toyota Corolla 2024</div>
+                  <div class="pred-chip">Cuota est. ₡185,000/mes</div>
+                  <div class="pred-chip">Plazo ideal: 48–60 m</div>
+                  <div class="pred-chip">Prima: 20%</div>
+                  <div class="pred-chip">Seguro combo sugerido</div>
+                </div>
+                <!-- AI narrative -->
+                <div id="pred-narrative" style="padding:10px 14px;font-size:12px;color:var(--text2);line-height:1.6;border-top:1px solid rgba(180,0,0,0.1);background:#FFF5F5;min-height:36px">
+                  Ingrese su ingreso mensual para obtener una predicción personalizada con IA.
+                </div>
+                <!-- Chat with AI button -->
+                <div style="padding:10px 14px;border-top:1px solid rgba(180,0,0,0.1)">
+                  <button onclick="openPredChat()" class="btn btn-primary btn-sm" style="width:100%;justify-content:center;gap:8px">
+                    💬 Chatear con el asistente sobre esta predicción
+                  </button>
+                </div>
               </div>
             </div>
             <div class="form-actions">
@@ -3044,14 +3069,22 @@ function buildTrendChart(cars) {
   }
   recs.push(`📊 A mayor plazo menor cuota mensual, pero mayor costo total financiero`);
 
+  // build guide lines
+  const guideLines = [25,50,75,100].map(pct => {
+    const y = chartH - (pct/100)*(chartH-10);
+    return `<line x1="${pad}" y1="${y}" x2="${chartW-pad}" y2="${y}" stroke="#F0F0F0" stroke-width="1"/>
+            <text x="${pad-4}" y="${y+3}" text-anchor="end" font-size="8" fill="#CCC">${pct}%</text>`;
+  }).join('');
+
   return `
   <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px;margin-top:16px">
-    <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:14px">📈 Tendencia de cuota por plazo (Plan AOFF · Prima ${primaP}%)</div>
+    <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:14px">📈 Tendencia de cuota por plazo · Plan AOFF · Prima ${primaP}%</div>
     <div style="display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap">
       <div style="flex:1;min-width:280px">
-        <svg viewBox="0 0 ${chartW} ${chartH+20}" style="width:100%;overflow:visible">
-          <line x1="${pad}" y1="0" x2="${pad}" y2="${chartH}" stroke="#E0E0E0" stroke-width="1"/>
-          <line x1="${pad}" y1="${chartH}" x2="${chartW-pad}" y2="${chartH}" stroke="#E0E0E0" stroke-width="1"/>
+        <svg viewBox="0 0 ${chartW} ${chartH+25}" style="width:100%;overflow:visible;background:#FAFAFA;border-radius:8px;padding:4px">
+          ${guideLines}
+          <line x1="${pad}" y1="0" x2="${pad}" y2="${chartH}" stroke="#DDD" stroke-width="1.5"/>
+          <line x1="${pad}" y1="${chartH}" x2="${chartW-pad}" y2="${chartH}" stroke="#DDD" stroke-width="1.5"/>
           ${svgLines}
           ${xLabels}
         </svg>
@@ -3101,26 +3134,71 @@ function selectTipo(t) {
 }
 
 /* ── Prediction ───────────────────────────────────── */
+let predDebounce = null;
+
 function updatePrediction() {
+  clearTimeout(predDebounce);
+  predDebounce = setTimeout(runPredictionAPI, 900);
+}
+
+async function runPredictionAPI() {
   const raw = (document.getElementById('ingreso-input')||{value:''}).value.replace(/[^0-9]/g,'');
-  const ing = parseInt(raw)||0;
-  const prod = (document.getElementById('prod-select')||{value:''}).value;
+  const ingreso = parseInt(raw) || 0;
+  const prod = (document.getElementById('prod-select')||{value:'Vehículo nuevo'}).value;
   const chips = document.getElementById('pred-chips');
-  if(!chips) return;
-  let h = '';
-  if(prod==='Vehículo nuevo'){
-    h = ing>=1500000
-      ? '<div class="pred-chip">🚙 Toyota RAV4 2025</div><div class="pred-chip">Cuota est. ₡215,000/mes</div><div class="pred-chip">Plazo ideal: 60–72 m</div><div class="pred-chip">Prima: 10%</div><div class="pred-chip">Plan Premium recomendado</div>'
-      : ing>=1000000
-      ? '<div class="pred-chip">🚗 Toyota Corolla 2024</div><div class="pred-chip">Cuota est. ₡165,000/mes</div><div class="pred-chip">Plazo: 48–60 m</div><div class="pred-chip">Prima: 20%</div>'
-      : '<div class="pred-chip">🚗 Toyota Yaris 2023</div><div class="pred-chip">Cuota est. ₡110,000/mes</div><div class="pred-chip">Plazo: 48 m</div>';
-  } else if(prod==='Financiamiento personal'){
-    const max = Math.round(ing*0.3*12/1000)*1000;
-    h = `<div class="pred-chip">💰 Hasta ₡${max.toLocaleString()}</div><div class="pred-chip">Tasa: 12.5% TEA</div><div class="pred-chip">Plazo: 12–24 m</div>`;
-  } else {
-    h = '<div class="pred-chip">🛡 Seguro Vida Purdy</div><div class="pred-chip">Prima: ₡18,000/mes</div><div class="pred-chip">Cobertura $50,000</div>';
+  const narrative = document.getElementById('pred-narrative');
+  if (!chips) return;
+
+  chips.innerHTML = '<div class="pred-chip" style="opacity:0.5">⏳ Analizando con IA...</div>';
+  if (narrative) narrative.innerHTML = '<span style="color:#888;font-size:11px">⏳ Consultando asistente IA...</span>';
+
+  const cap = Math.round(ingreso * 0.30);
+  const prompt = `Eres asesor financiero de CAFSA Grupo Financiero Costa Rica. Analiza y recomienda:
+Ingreso bruto: ₡${ingreso.toLocaleString()} / Capacidad pago (30%): ₡${cap.toLocaleString()}/mes / Interés: ${prod}
+Planes CAFSA: AOFF (8.5% TEA, paga saldo total al final), Renting (devuelve vehículo, residual 35%), AOP (paga valor residual 30%), Prendario (12.5% TEA, propietario inmediato)
+Modelos: Yaris $18,500 / Corolla $26,900 / RAV4 $38,500 / Hilux $44,900 / Fortuner $52,000 / Highlander $58,000
+TC: ₡521/USD. Responde SOLO JSON sin markdown: {"vehiculo":"nombre","precio_usd":número,"plan":"plan","cuota_colones":número,"plazo_meses":número,"prima_pct":número,"razon":"una oración","alerta":"tip o vacío","chips":["chip1","chip2","chip3","chip4","chip5"]}`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:350,
+        messages:[{role:'user', content: prompt}] })
+    });
+    const data = await resp.json();
+    const text = data.content?.[0]?.text || '';
+    const match = text.match(/\{[\s\S]*?\}/);
+    const pred = JSON.parse(match[0]);
+
+    const chipItems = pred.chips || [`🚗 ${pred.vehiculo}`,`₡${Math.round(pred.cuota_colones).toLocaleString()}/mes`,`${pred.plazo_meses} meses`,`Prima ${pred.prima_pct}%`,pred.plan];
+    chips.innerHTML = chipItems.map(c => `<div class="pred-chip">${c}</div>`).join('');
+    if (narrative) narrative.innerHTML = `<div style="margin-bottom:4px">✨ <strong>${pred.razon}</strong></div>${pred.alerta?`<div style="margin-top:6px;padding:6px 10px;background:#FFF8E6;border-radius:8px;border-left:3px solid #F5A623;font-size:11px;color:#7A4A04">⚠ ${pred.alerta}</div>`:''}`;
+    window._lastPrediction = pred;
+
+  } catch(e) {
+    // Fallback
+    let vehiculo, precio_usd, planName;
+    if (cap >= 285000)      { vehiculo='Toyota RAV4';     precio_usd=38500; planName='AOFF'; }
+    else if (cap >= 199000) { vehiculo='Toyota Corolla';  precio_usd=26900; planName='AOFF'; }
+    else if (cap >= 125000) { vehiculo='Toyota Yaris';    precio_usd=18500; planName='Renting'; }
+    else                    { vehiculo='Toyota Yaris';    precio_usd=18500; planName='Renting'; }
+    const pv=precio_usd*0.8, r=0.085/12, m=60, res=precio_usd*0.20;
+    const cuota = Math.round((pv*r - res*r/Math.pow(1+r,m))/(1-Math.pow(1+r,-m)))*521;
+    chips.innerHTML = [`🚗 ${vehiculo}`,`₡${cuota.toLocaleString()}/mes`,'60 meses','Prima 20%',`Plan ${planName}`].map(c=>`<div class="pred-chip">${c}</div>`).join('');
+    if (narrative) narrative.innerHTML = `📊 Basado en capacidad de pago del 30% del ingreso (₡${cap.toLocaleString()}/mes).`;
+    window._lastPrediction = { vehiculo, plan: planName, cuota_colones: cuota };
   }
-  chips.innerHTML = h;
+}
+
+function openPredChat() {
+  const pred = window._lastPrediction;
+  const carName = pred?.vehiculo || 'el vehículo sugerido';
+  openNegotiate('', carName + ' · ' + (pred?.plan||'plan CAFSA'));
+  setTimeout(() => {
+    const txt = `La IA sugirió el ${carName} con plan ${pred?.plan||'AOFF'} a ₡${(pred?.cuota_colones||0).toLocaleString()}/mes. ¿Pueden confirmar condiciones?`;
+    const inp = document.getElementById('neg-input');
+    if (inp) { inp.value = txt; negSend(); }
+  }, 600);
 }
 
 /* ── KYC progress ─────────────────────────────────── */
@@ -5368,7 +5446,7 @@ const PLAN_INFO = {
   aoff: {
     icon:'🏦', name:'AOFF · Arrendamiento Operativo con Opción de Compra',
     color:'#8B0000',
-    what:'Es un arrendamiento financiero donde usted paga cuotas mensuales y al final del plazo puede <strong>comprar el vehículo a un valor residual preestablecido</strong> (20% del valor).',
+    what:'Es un arrendamiento financiero donde usted paga cuotas mensuales y al final del plazo paga el <strong>saldo total del financiamiento</strong> para adquirir el vehículo. La opción de compra incluye el residual acumulado.',
     pros:['Cuotas más bajas que un crédito tradicional','No requiere enganche si la tasa lo permite','El vehículo puede estar a nombre de la empresa para deducción fiscal','Opción de compra flexible al vencimiento'],
     cons:['Al vencimiento debe pagar el residual para adquirir el bien','No es propietario durante el plazo'],
     uso:'Ideal para empresas o personas que quieren optimizar flujo de caja y tienen certeza de compra futura.',
@@ -5384,9 +5462,9 @@ const PLAN_INFO = {
   aop: {
     icon:'📋', name:'AOP · Arrendamiento Operativo Puro',
     color:'#7A4A04',
-    what:'Similar al Renting pero <strong>orientado a empresa</strong>. El arrendatario no tiene opción de compra. 30% de valor residual al final del contrato.',
-    pros:['Sin carga de activo en el balance','Cuotas deducibles como gasto operativo','Gestión de flota simplificada'],
-    cons:['Sin opción de compra','Más orientado a persona jurídica'],
+    what:'Arrendamiento empresarial donde al vencimiento el arrendatario paga el <strong>valor residual (30% del precio original)</strong> para adquirir el bien. Pensado para flotas corporativas con opción de compra al residual.',
+    pros:['Cuotas deducibles como gasto operativo','Gestión de flota simplificada','Opción de compra pagando el valor residual (30%)'],
+    cons:['Residual del 30% debe cancelarse al vencimiento','Más orientado a persona jurídica'],
     uso:'Para empresas que quieren gestionar costos operativos y mantener flota actualizada sin afectar su capital.',
   },
   prendario: {
