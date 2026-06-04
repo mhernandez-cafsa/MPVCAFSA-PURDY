@@ -668,8 +668,8 @@ body{font-family:'Poppins',sans-serif;background:#0D0D0D;color:var(--text);min-h
   text-align: center; margin-bottom: 28px; max-width: 540px;
 }
 .ws-profiles {
-  display: grid; grid-template-columns: repeat(5, 1fr);
-  gap: 12px; max-width: 1200px; width: 96%;
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 16px; max-width: 980px; width: 90%;
 }
 .ws-profile-card-juridico {
   grid-column: auto; /* normal flow — 5th card in same row */
@@ -1150,7 +1150,7 @@ body{font-family:'Poppins',sans-serif;background:#0D0D0D;color:var(--text);min-h
   <div class="ws-sub">Seleccione su perfil para continuar. Cada vista está personalizada según su rol.</div>
 
   <!-- 4 Profile cards -->
-  <div class="ws-profiles" style="grid-template-columns:repeat(5,1fr)">
+  <div class="ws-profiles">
 
     <!-- 1. Genérico / Visitante -->
     <div class="ws-profile-card" onclick="enterPortal('generico')">
@@ -1213,23 +1213,6 @@ body{font-family:'Poppins',sans-serif;background:#0D0D0D;color:var(--text);min-h
     </div>
 
   </div>
-
-    <!-- 5. Cliente Jurídico -->
-    <div class="ws-profile-card ws-profile-card-juridico" onclick="enterPortal('juridico')" style="border-color:rgba(255,220,150,0.4)">
-      <div class="ws-recommended-tag" style="background:rgba(255,200,80,0.9);color:#5C3A00">🏢 Empresa</div>
-      <div class="ws-profile-icon" style="background:rgba(255,255,255,0.12)">🏢</div>
-      <div class="ws-profile-name">Cliente CAFSA Jurídico</div>
-      <div class="ws-profile-desc">Empresa con crédito CAFSA · Flotillas, asociadas y vehículos asignados a colaboradores</div>
-      <div class="ws-profile-features">
-        <div class="ws-pf">Gestión de flotillas</div>
-        <div class="ws-pf">Vehículos por colaborador</div>
-        <div class="ws-pf">Empresas asociadas</div>
-        <div class="ws-pf">Arrendamientos corporativos</div>
-        <div class="ws-pf">KYC y expediente empresa</div>
-        <div class="ws-pf">Facturas y estados de cuenta</div>
-      </div>
-      <button class="ws-enter-btn" style="border-color:rgba(255,200,80,0.4)">Ingresar como empresa →</button>
-    </div>
 
   </div>
   <div class="ws-footer">CAFSA · Grupo Purdy Motor · Portal Financiero · 2025 · 🐾 PugBot disponible</div>
