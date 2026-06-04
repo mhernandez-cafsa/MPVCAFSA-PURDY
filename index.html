@@ -3374,12 +3374,12 @@ function enterPortal(profile) {
 
 /* ══ TRACKING DATA ════════════════════════════════════ */
 const MOCK_CLIENTS = [
-  { id:'CM1', initials:'CM', name:'Carlos Mora Jiménez', cedula:'1-1234-5678', vehiculo:'Toyota RAV4 2025', cuota:'₡215,000', vence:'15 jul 2025', estado:'al-dia', plan:'AOFF 60m', asesor:'Rodolfo M.', mora:0 },
-  { id:'LA2', initials:'LA', name:'Laura Alfaro Vega', cedula:'2-3456-7890', vehiculo:'Toyota Corolla 2024', cuota:'₡155,000', vence:'10 jul 2025', estado:'al-dia', plan:'Prendario 48m', asesor:'Rodolfo M.', mora:0 },
-  { id:'JR3', initials:'JR', name:'Jorge Ramírez Castro', cedula:'1-8765-4321', vehiculo:'Toyota Hilux 2024', cuota:'₡280,000', vence:'5 jul 2025', estado:'mora', plan:'AOFF 60m', asesor:'Rodolfo M.', mora:12 },
-  { id:'MA4', initials:'MA', name:'María Alvarado Solís', cedula:'3-4567-8901', vehiculo:'Toyota Yaris 2023', cuota:'₡98,000', vence:'20 jul 2025', estado:'al-dia', plan:'Prendario 36m', asesor:'Rodolfo M.', mora:0 },
-  { id:'RP5', initials:'RP', name:'Roberto Pérez Lobo', cedula:'1-2222-3333', vehiculo:'Toyota RAV4 2025', cuota:'₡210,000', vence:'1 ago 2025', estado:'pendiente', plan:'Renting 60m', asesor:'Rodolfo M.', mora:0 },
-  { id:'AP6', initials:'AP', name:'Ana Patricia Zúñiga', cedula:'2-9876-5432', vehiculo:'Toyota Highlander', cuota:'₡380,000', vence:'15 jul 2025', estado:'al-dia', plan:'AOFF 72m', asesor:'Rodolfo M.', mora:0 },
+  { id:'CM1', initials:'CM', name:'Carlos Mora Jiménez',rating: 4, cedula:'1-1234-5678', vehiculo:'Toyota RAV4 2025', cuota:'₡215,000', vence:'15 jul 2025', estado:'al-dia', plan:'AOFF 60m', asesor:'Rodolfo M.', mora:0 },
+  { id:'LA2', initials:'LA', name:'Laura Alfaro Vega',rating: 4, cedula:'2-3456-7890', vehiculo:'Toyota Corolla 2024', cuota:'₡155,000', vence:'10 jul 2025', estado:'al-dia', plan:'Prendario 48m', asesor:'Rodolfo M.', mora:0 },
+  { id:'JR3', initials:'JR', name:'Jorge Ramírez Castro', rating: 4,cedula:'1-8765-4321', vehiculo:'Toyota Hilux 2024', cuota:'₡280,000', vence:'5 jul 2025', estado:'mora', plan:'AOFF 60m', asesor:'Rodolfo M.', mora:12 },
+  { id:'MA4', initials:'MA', name:'María Alvarado Solís',rating: 4, cedula:'3-4567-8901', vehiculo:'Toyota Yaris 2023', cuota:'₡98,000', vence:'20 jul 2025', estado:'al-dia', plan:'Prendario 36m', asesor:'Rodolfo M.', mora:0 },
+  { id:'RP5', initials:'RP', name:'Roberto Pérez Lobo',rating: 4, cedula:'1-2222-3333', vehiculo:'Toyota RAV4 2025', cuota:'₡210,000', vence:'1 ago 2025', estado:'pendiente', plan:'Renting 60m', asesor:'Rodolfo M.', mora:0 },
+  { id:'AP6', initials:'AP', name:'Ana Patricia Zúñiga',rating: 4, cedula:'2-9876-5432', vehiculo:'Toyota Highlander', cuota:'₡380,000', vence:'15 jul 2025', estado:'al-dia', plan:'AOFF 72m', asesor:'Rodolfo M.', mora:0 },
 ];
 
 const STAGES = ['Cotización','KYC','Pre-aprobado','Aprobado','Entregado','Al día'];
@@ -3420,8 +3420,18 @@ function renderPurdyClients(clients) {
     return `<div class="track-client-row ${selectedPurdyClient===c.id?'selected':''}" onclick="selectPurdyClient('${c.id}')">
       <div class="track-av">${c.initials}</div>
       <div style="flex:1;min-width:0">
-        <div class="track-name">${c.name}</div>
-        <div class="track-meta">${c.vehiculo}</div>
+<div class="track-name">
+  ${c.name}
+  <span style="margin-left:6px">
+    ${'⭐'.repeat(c.rating || 0)}
+  </span>
+</div>
+
+<div style="font-size:10px;margin-top:2px">
+  ${c.restringido
+    ? '<span style="color:#B91C1C">🔒 Restringido</span>'
+    : '<span style="color:#15803D">✓ Libre</span>'}
+</div>        <div class="track-meta">${c.vehiculo}</div>
       </div>
       <span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;background:${statusColors[c.estado]};color:${statusTx[c.estado]};flex-shrink:0">${statusLabel[c.estado]}</span>
     </div>`;
