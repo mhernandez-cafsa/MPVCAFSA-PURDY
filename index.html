@@ -1159,6 +1159,25 @@ body{font-family:'Poppins',sans-serif;background:#0D0D0D;color:var(--text);min-h
 }
 .neg-send:hover { background:#8B0000;transform:scale(1.08); }
 
+
+/* ── Notification filter pills ── */
+.mn-pill {
+  padding:7px 18px;border-radius:20px;
+  border:1.5px solid var(--border2);
+  background:#fff;color:var(--text2);
+  font-size:12px;font-weight:600;
+  cursor:pointer;font-family:inherit;
+  transition:all .15s;
+}
+.mn-pill.active         { background:var(--blue);color:#fff;border-color:var(--blue); }
+.mn-pill:hover:not(.active) { border-color:var(--blue);color:var(--blue); }
+.mn-pill.urgent         { border-color:#FFAAAA;color:#8B1C1C;background:#FFF5F5; }
+.mn-pill.urgent.active  { background:#CC0000;border-color:#CC0000;color:#fff; }
+.mn-pill.medio          { border-color:#F0C860;color:#7A4A04;background:#FFFBF0; }
+.mn-pill.medio.active   { background:#C47A00;border-color:#C47A00;color:#fff; }
+.mn-pill.bajo           { border-color:#A8D8A8;color:#1E5C08;background:#F5FFF5; }
+.mn-pill.bajo.active    { background:#1E5C08;border-color:#1E5C08;color:#fff; }
+
 </style>
 </head>
 <body>
@@ -2383,26 +2402,31 @@ body{font-family:'Poppins',sans-serif;background:#0D0D0D;color:var(--text);min-h
          MÓDULO: MESA DE TICKETS CAFSA
     ════════════════════════════════════════════════════ -->
     <section id="mod-notificaciones" class="module">
-      <div class="page-title">🔔 Mis Notificaciones</div>
-      <div class="page-sub">Tickets por atender · Alertas del sistema · Pendientes asignados</div>
-
-      <!-- Filter bar -->
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap">
-        <button class="dept-tab active" id="mn-tab-todos" onclick="filterModNotifs('todos',this)">Todos</button>
-        <button class="dept-tab" id="mn-tab-mis" onclick="filterModNotifs('mis',this)">⭐ Mis tickets</button>
-        <button class="dept-tab" id="mn-tab-urg" onclick="filterModNotifs('urgente',this)" style="background:#FDECEC;border-color:#CC0000;color:#8B0000">🔴 Urgentes</button>
-        <button class="dept-tab" id="mn-tab-medio" onclick="filterModNotifs('medio',this)">🟡 Medio</button>
-        <button class="dept-tab" id="mn-tab-bajo" onclick="filterModNotifs('bajo',this)" style="background:#E4F4DA;border-color:#1E5C08;color:#1E5C08">🟢 Bajo</button>
-        <div style="margin-left:auto;display:flex;gap:8px">
-          <button onclick="markAllReadMod()" class="btn btn-ghost btn-sm">✓ Marcar todas leídas</button>
+      <!-- Header row -->
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap">
+        <div>
+          <div class="page-title" style="margin-bottom:4px">Mis Notificaciones</div>
+          <div class="page-sub" style="margin-bottom:0">Tickets por atender hoy · Alertas del sistema</div>
         </div>
+        <button onclick="markAllReadMod()" class="btn btn-ghost btn-sm" style="flex-shrink:0">
+          ✓ Marcar todas leídas
+        </button>
       </div>
 
       <!-- Summary stats -->
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px" id="notif-mod-stats"></div>
+      <div id="notif-mod-stats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px"></div>
 
-      <!-- Notification list -->
-      <div id="notif-mod-list" style="display:flex;flex-direction:column;gap:8px"></div>
+      <!-- Filter pills -->
+      <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">
+        <button class="mn-pill active" id="mn-tab-todos"  onclick="filterModNotifs('todos',this)">Todos</button>
+        <button class="mn-pill"        id="mn-tab-mis"    onclick="filterModNotifs('mis',this)">⭐ Mis tickets</button>
+        <button class="mn-pill urgent" id="mn-tab-urg"    onclick="filterModNotifs('urgente',this)">🔴 Urgentes</button>
+        <button class="mn-pill medio"  id="mn-tab-medio"  onclick="filterModNotifs('medio',this)">🟡 Medio</button>
+        <button class="mn-pill bajo"   id="mn-tab-bajo"   onclick="filterModNotifs('bajo',this)">🟢 Bajo</button>
+      </div>
+
+      <!-- List -->
+      <div id="notif-mod-list" style="display:flex;flex-direction:column;gap:10px"></div>
     </section>
 
     <section id="mod-mesa-cafsa" class="module">
@@ -3781,6 +3805,7 @@ function renderCafsaTickets(tickets) {
 let cafsaTicketFilter = 'todos';
 function filterTickets(type, btn) {
   cafsaTicketFilter = type;
+  if (type === 'todos') cafsaDeptFilter = 'todos'; // reset dept filter too
   document.querySelectorAll('.cafsa-f-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   applyTicketFilters();
@@ -4899,7 +4924,7 @@ function initNotificaciones() {
 
 function filterModNotifs(f, btn) {
   modNotifFilter = f;
-  document.querySelectorAll('[id^="mn-tab-"]').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.mn-pill').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   renderModNotifs();
 }
@@ -4932,41 +4957,77 @@ function renderModNotifStats() {
 function renderModNotifs() {
   const list = document.getElementById('notif-mod-list');
   if (!list) return;
-  const pColors = { urgente:'#CC0000', medio:'#F5A623', bajo:'#1E5C08' };
+  const pColors    = { urgente:'#CC0000', medio:'#C47A00', bajo:'#1E5C08' };
+  const pBg        = { urgente:'#FFF0F0', medio:'#FFFBF0', bajo:'#F0FFF0' };
+  const pLabel     = { urgente:'Urgente',  medio:'Medio',   bajo:'Bajo' };
+
   let notifs = MOCK_NOTIFS;
   if (modNotifFilter === 'mis')     notifs = notifs.filter(n => n.mine);
   if (modNotifFilter === 'urgente') notifs = notifs.filter(n => n.priority === 'urgente');
   if (modNotifFilter === 'medio')   notifs = notifs.filter(n => n.priority === 'medio');
   if (modNotifFilter === 'bajo')    notifs = notifs.filter(n => n.priority === 'bajo');
 
+  if (!notifs.length) {
+    list.innerHTML = `<div style="padding:60px 24px;text-align:center;color:var(--text3)">
+      <div style="font-size:40px;margin-bottom:12px">✓</div>
+      <div style="font-size:15px;font-weight:700;color:var(--text2)">Sin notificaciones</div>
+      <div style="font-size:12px;margin-top:4px">No hay elementos en esta vista</div>
+    </div>`;
+    return;
+  }
+
   list.innerHTML = notifs.map(n => {
-    const read = NOTIF_READ.has(n.id);
-    const pCol = pColors[n.priority] || '#888';
+    const read  = NOTIF_READ.has(n.id);
+    const col   = pColors[n.priority]  || '#888';
+    const bg    = pBg[n.priority]      || '#FAFAFA';
+    const label = pLabel[n.priority]   || n.priority;
+
     return `
     <div onclick="openFromNotifMod('${n.id}','${n.ticket}')"
-      style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px 16px;
-             cursor:pointer;transition:all .15s;display:flex;gap:12px;align-items:flex-start;
-             ${!read ? 'border-left:4px solid '+pCol+';' : 'opacity:0.65;'}">
-      <div style="width:10px;height:10px;border-radius:50%;background:${read?'#DDD':pCol};flex-shrink:0;margin-top:4px"></div>
-      <div style="flex:1;min-width:0">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap">
-          <span style="font-size:10px;font-weight:800;color:${pCol};text-transform:uppercase;letter-spacing:0.5px">${n.priority}</span>
-          <span style="font-size:11px;color:var(--text3);font-weight:600">${n.ticket}</span>
-          ${n.mine ? '<span style="font-size:10px;background:#FFF0F0;color:#CC0000;border-radius:10px;padding:1px 8px;font-weight:700;border:1px solid #FFAAAA">⭐ Mío</span>' : ''}
-          ${!read ? '<span style="font-size:10px;background:#CC0000;color:#fff;border-radius:10px;padding:1px 8px;font-weight:700">Nuevo</span>' : ''}
+      style="background:#fff;border-radius:16px;border:1px solid ${read?'var(--border)':col+'40'};
+             box-shadow:${read?'none':'0 2px 12px '+col+'15'};
+             padding:0;overflow:hidden;cursor:pointer;transition:all .2s;
+             ${!read?'border-left:4px solid '+col:''}"
+      onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 4px 20px rgba(0,0,0,0.1)'"
+      onmouseout="this.style.transform='';this.style.boxShadow='${read?'none':'0 2px 12px '+col+'15'}'">
+
+      <!-- Card top strip -->
+      <div style="padding:14px 16px 10px;display:flex;align-items:flex-start;gap:12px">
+        <!-- Priority dot + icon -->
+        <div style="width:36px;height:36px;border-radius:10px;background:${bg};
+                    display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px">
+          ${n.priority==='urgente'?'🚨':n.priority==='medio'?'🟡':'🟢'}
         </div>
-        <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px">${n.client}</div>
-        <div style="font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:6px">${n.msg}</div>
-        <div style="display:flex;align-items:center;justify-content:space-between">
-          <span style="font-size:10px;color:var(--text3)">${n.time}</span>
-          <button onclick="event.stopPropagation();openFromNotifMod('${n.id}','${n.ticket}')"
-            class="btn btn-primary btn-sm" style="font-size:10px;padding:4px 10px">
-            Ver ticket →
-          </button>
+
+        <!-- Content -->
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap">
+            <span style="font-size:10px;font-weight:800;letter-spacing:0.6px;text-transform:uppercase;
+                         color:${col};background:${bg};padding:2px 8px;border-radius:20px">${label}</span>
+            <span style="font-size:10px;font-weight:700;color:var(--text3)">${n.ticket}</span>
+            ${n.mine?`<span style="font-size:10px;background:#FFF0F0;color:#CC0000;border-radius:20px;padding:2px 8px;font-weight:700;border:1px solid #FFCCCC">⭐ Mío</span>`:''}
+            ${!read?`<span style="font-size:9px;background:#CC0000;color:#fff;border-radius:20px;padding:2px 7px;font-weight:800">NUEVO</span>`:''}
+          </div>
+          <div style="font-size:14px;font-weight:700;color:var(--text);line-height:1.3;margin-bottom:4px">${n.client}</div>
+          <div style="font-size:12px;color:var(--text2);line-height:1.55">${n.msg}</div>
         </div>
       </div>
+
+      <!-- Card footer -->
+      <div style="padding:8px 16px 10px;display:flex;align-items:center;justify-content:space-between;
+                  border-top:1px solid var(--border);background:#FAFAFA">
+        <span style="font-size:10px;color:var(--text3);display:flex;align-items:center;gap:4px">
+          🕐 ${n.time}
+        </span>
+        <button onclick="event.stopPropagation();openFromNotifMod('${n.id}','${n.ticket}')"
+          style="padding:5px 14px;background:var(--blue);color:#fff;border:none;border-radius:20px;
+                 font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .15s"
+          onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+          Ver ticket →
+        </button>
+      </div>
     </div>`;
-  }).join('') || '<div style="padding:40px;text-align:center;color:var(--text3)"><div style="font-size:32px;margin-bottom:10px">✓</div><div style="font-size:14px;font-weight:600">Sin notificaciones en esta vista</div></div>';
+  }).join('');
 }
 
 function openFromNotifMod(notifId, ticketId) {
