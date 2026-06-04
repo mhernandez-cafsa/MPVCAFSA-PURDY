@@ -26,8 +26,8 @@
   --tr:all .18s cubic-bezier(.4,0,.2,1);
   --tc:521px; /* type change point */
 }
-html{font-size:15px;scroll-behavior:smooth}
-body{font-family:'Poppins',sans-serif;background:#fff;color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+html{font-size:15px;scroll-behavior:smooth;margin:0;padding:0;background:#0D0D0D}
+body{font-family:'Poppins',sans-serif;background:#fff;color:var(--text);min-height:100vh;display:flex;flex-direction:column;margin:0;padding:0}
 
 /* ══ TOPBAR ═════════════════════════════════════════ */
 .topbar{
@@ -1221,13 +1221,14 @@ body{font-family:'Poppins',sans-serif;background:#fff;color:var(--text);min-heig
     <div class="ws-profile-card ws-profile-card-juridico" onclick="enterPortal('juridico')" style="border-color:rgba(255,220,150,0.4);max-width:300px;justify-self:center">
       <div class="ws-recommended-tag" style="background:rgba(255,200,80,0.9);color:#5C3A00">🏢 Empresa</div>
       <div class="ws-profile-icon" style="background:rgba(255,255,255,0.12)">🏢</div>
-      <div class="ws-profile-name">Cliente Jurídico</div>
-      <div class="ws-profile-desc">Persona jurídica o empresa con crédito CAFSA · Vista corporativa</div>
+      <div class="ws-profile-name">Cliente CAFSA Jurídico</div>
+      <div class="ws-profile-desc">Empresa con crédito CAFSA · Flotillas, asociadas y vehículos asignados a colaboradores</div>
       <div class="ws-profile-features">
-        <div class="ws-pf">Flota vehicular empresarial</div>
+        <div class="ws-pf">Gestión de flotillas</div>
+        <div class="ws-pf">Vehículos por colaborador</div>
+        <div class="ws-pf">Empresas asociadas</div>
         <div class="ws-pf">Arrendamientos corporativos</div>
-        <div class="ws-pf">Expediente empresa</div>
-        <div class="ws-pf">KYC empresarial</div>
+        <div class="ws-pf">KYC y expediente empresa</div>
         <div class="ws-pf">Facturas y estados de cuenta</div>
       </div>
       <button class="ws-enter-btn" style="border-color:rgba(255,200,80,0.4)">Ingresar como empresa →</button>
@@ -1310,9 +1311,15 @@ body{font-family:'Poppins',sans-serif;background:#fff;color:var(--text);min-heig
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
       Registro / Perfil
     </div>
-    <div class="sb-item" id="sn-kyc" onclick="goModule('kyc',3)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0 1 12 2.944a11.955 11.955 0 0 1-8.618 3.04A12.02 12.02 0 0 0 3 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-      KYC &amp; Consentimiento
+    <div class="sb-item" id="sn-kyc" onclick="goModule('kyc',3)" style="justify-content:space-between">
+      <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;opacity:.65;flex-shrink:0"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0 1 12 2.944a11.955 11.955 0 0 1-8.618 3.04A12.02 12.02 0 0 0 3 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+        <span style="font-size:12px;line-height:1.3">Conozca a su Cliente</span>
+      </div>
+      <span onclick="event.stopPropagation();showKycInfo()" title="¿Qué es?"
+        style="width:16px;height:16px;border-radius:50%;background:var(--blue);color:#fff;
+               font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;
+               cursor:pointer;flex-shrink:0">ℹ</span>
     </div>
     <div class="sb-section">Servicios</div>
     <div class="sb-item" id="sn-sin" onclick="goModule('siniestros',4)">
@@ -3129,7 +3136,7 @@ const PROFILE_NAVS = {
     }
   },
   juridico: {
-    label: '🏢 Cliente Jurídico',
+    label: '🏢 Cliente CAFSA Jurídico',
     show:  ['autogestion','operacion','comparar','registro','kyc','siniestros','catalogo','ejecutivo','financiamientos'],
     hide:  ['tracking-purdy','mesa-cafsa'],
     first: 'autogestion',
@@ -4319,6 +4326,66 @@ function pugSendQuick(text) {
 </div>
 
 <script>
+function showKycInfo() {
+  const existing = document.getElementById('kyc-info-popup');
+  if (existing) { existing.remove(); return; }
+  const popup = document.createElement('div');
+  popup.id = 'kyc-info-popup';
+  popup.style.cssText = `position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:850;
+    display:flex;align-items:center;justify-content:center`;
+  popup.onclick = function(e) { if(e.target===this) this.remove(); };
+  popup.innerHTML = \`
+    <div style="background:#fff;border-radius:18px;width:460px;max-width:95vw;
+                box-shadow:0 20px 60px rgba(0,0,0,0.25);overflow:hidden;animation:fadeUp .25s ease">
+      <div style="background:linear-gradient(135deg,#8B0000,#CC0000);padding:18px 22px;display:flex;align-items:center;gap:12px">
+        <div style="font-size:24px">🛡</div>
+        <div>
+          <div style="color:#fff;font-size:16px;font-weight:700">Conozca a su Cliente (KYC)</div>
+          <div style="color:rgba(255,255,255,0.6);font-size:11px">Know Your Customer · CAFSA Grupo Financiero</div>
+        </div>
+        <button onclick="document.getElementById('kyc-info-popup').remove()"
+          style="margin-left:auto;background:rgba(255,255,255,0.15);border:none;color:#fff;
+                 width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:14px">✕</button>
+      </div>
+      <div style="padding:22px">
+        <div style="font-size:14px;font-weight:700;color:#1A0000;margin-bottom:10px">¿Para qué sirve el KYC?</div>
+        <div style="font-size:13px;color:#444;line-height:1.7;margin-bottom:16px">
+          El proceso <strong>KYC (Conozca a su Cliente)</strong> permite a CAFSA verificar su identidad y 
+          evaluar su perfil financiero de manera segura, garantizando:
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
+          <div style="display:flex;align-items:flex-start;gap:10px;background:#E4F4DA;border-radius:9px;padding:10px 13px">
+            <span style="font-size:16px;flex-shrink:0">✅</span>
+            <div style="font-size:12px;color:#1E5C08;line-height:1.5"><strong>Acceso a mejores tasas</strong> — Su perfil crediticio validado le permite obtener condiciones preferenciales</div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px;background:#E4F4DA;border-radius:9px;padding:10px 13px">
+            <span style="font-size:16px;flex-shrink:0">⚡</span>
+            <div style="font-size:12px;color:#1E5C08;line-height:1.5"><strong>Pre-aprobación en 24 horas</strong> — Con KYC completo, su línea de crédito se activa casi de inmediato</div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px;background:#E4F4DA;border-radius:9px;padding:10px 13px">
+            <span style="font-size:16px;flex-shrink:0">🏦</span>
+            <div style="font-size:12px;color:#1E5C08;line-height:1.5"><strong>Línea pre-aprobada flexible</strong> — Úsela para vehículos, talleres, viajes y más según su perfil</div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px;background:#E4F4DA;border-radius:9px;padding:10px 13px">
+            <span style="font-size:16px;flex-shrink:0">🔒</span>
+            <div style="font-size:12px;color:#1E5C08;line-height:1.5"><strong>Protección de datos</strong> — Amparado por la <strong>Ley 8968</strong> de Protección de Datos de Costa Rica</div>
+          </div>
+        </div>
+        <div style="background:#FFF8F8;border-radius:9px;padding:12px 14px;font-size:11px;color:#888;border-left:3px solid #CC0000">
+          📋 El proceso incluye: verificación de identidad (cédula), consulta de score SUGEF, 
+          carga de documentos y firma digital. Se completa en menos de 10 minutos.
+        </div>
+        <button onclick="document.getElementById('kyc-info-popup').remove();goModule('kyc',3)"
+          style="width:100%;margin-top:16px;padding:11px;background:#CC0000;color:#fff;border:none;
+                 border-radius:10px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer">
+          Iniciar mi KYC ahora →
+        </button>
+      </div>
+    </div>
+  \`;
+  document.body.appendChild(popup);
+}
+
 /* ══ VISITOR GATE ════════════════════════════════════ */
 let vgMode = 'cedula';
 
