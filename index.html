@@ -961,6 +961,34 @@ body{font-family:'Poppins',sans-serif;background:#0D0D0D;color:var(--text);min-h
 
 
 /* ── Plan info button (ℹ) ── */
+.plan-eye-btn {
+  display:inline-flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:13px;line-height:1;
+  opacity:0.55;transition:opacity .15s,transform .15s;
+  flex-shrink:0;background:none;border:none;padding:0;
+}
+.plan-eye-btn:hover { opacity:1; transform:scale(1.2); }
+
+/* Eye chart modal */
+#plan-eye-modal {
+  position:fixed;inset:0;background:rgba(0,0,0,0.45);
+  z-index:750;display:none;align-items:center;justify-content:center;
+}
+#plan-eye-modal.open { display:flex; }
+.plan-eye-box {
+  background:#fff;border-radius:18px;padding:24px;
+  width:min(600px,95vw);box-shadow:0 20px 60px rgba(0,0,0,0.25);
+  position:relative;max-height:90vh;overflow-y:auto;
+}
+.plan-eye-close {
+  position:absolute;top:14px;right:14px;
+  background:#F5F5F5;border:none;border-radius:50%;
+  width:28px;height:28px;cursor:pointer;font-size:14px;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s;
+}
+.plan-eye-close:hover { background:#E0E0E0; }
+
 .plan-info-btn {
   display:inline-flex;align-items:center;justify-content:center;
   width:16px;height:16px;border-radius:50%;
@@ -2590,6 +2618,12 @@ function runCompare() {
   // Start collapsed
   equipBody.style.maxHeight = '0';
 
+  /* Save cars globally for eye chart */
+  window._cmpCars = cars;
+  window._cmpMeses = parseInt(document.getElementById('plazo-sel')?.value) || 60;
+  window._cmpPrima = parseInt(document.getElementById('prima-sel')?.value) || 20;
+  window._cmpTc = parseFloat(document.getElementById('cmp-tc')?.value) || 521;
+
   /* Show results + cuotas FIRST */
   document.getElementById('cmp-results').classList.add('show');
   buildFinGrid(cars);
@@ -2790,10 +2824,16 @@ function renderFinGrid(cars) {
 
     const rowsHTML = rows.map(r => {
       const isBest = Math.abs(r.cUSD - minCUSD) < 0.5;
+      // Build per-plan data for the eye chart (all cars, this plan only)
+      const planCarsData = JSON.stringify(window._cmpCars ? window._cmpCars.map(c => ({
+        name: c.name, usd: c.usd
+      })) : []).replace(/"/g,'&quot;');
       return `
         <div class="fin-row-label" style="display:flex;align-items:center;gap:6px">
           ${r.p.name}
           <span class="plan-info-btn" onclick="showPlanInfo('${r.p.key}')" title="¿Qué es este plan?">ℹ</span>
+          <span class="plan-eye-btn" onclick="showPlanChart('${r.p.key}','${r.p.name}')"
+                title="Ver gráfico de precio vs cuota para ${r.p.name}">👁</span>
         </div>
         <div class="fin-cell ${isBest ? 'best' : ''}">
           <div class="cuota-wrap">
@@ -4545,6 +4585,121 @@ function submitVisitorGate() {
 document.getElementById('visitor-gate').addEventListener('click', function(e) {
   if (e.target === this) closeVisitorGate();
 });
+</script>
+
+<!-- ══ PLAN EYE CHART MODAL ══════════════════════════ -->
+<div id="plan-eye-modal" onclick="if(event.target===this)closePlanChart()">
+  <div class="plan-eye-box">
+    <button class="plan-eye-close" onclick="closePlanChart()">✕</button>
+    <div id="plan-eye-title" style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px"></div>
+    <div id="plan-eye-sub" style="font-size:11px;color:var(--text3);margin-bottom:16px"></div>
+    <div id="plan-eye-chart"></div>
+  </div>
+</div>
+
+<script>
+/* ══ EYE CHART (per-plan comparison) ══════════════ */
+function showPlanChart(planKey, planName) {
+  const cars = window._cmpCars;
+  if (!cars || cars.length < 2) { alert('Compare al menos 2 vehículos primero'); return; }
+
+  const meses  = window._cmpMeses || 60;
+  const primaP = window._cmpPrima || 20;
+  const tc     = window._cmpTc    || 521;
+
+  // Plan config
+  const PLANS_CFG = {
+    aoff:      { tasa:0.085, residual:0.20, primaReq:false },
+    renting:   { tasa:0.095, residual:0.35, primaReq:false },
+    aop:       { tasa:0.088, residual:0.30, primaReq:false },
+    prendario: { tasa:0.125, residual:0.00, primaReq:true  },
+  };
+  const plan = PLANS_CFG[planKey] || PLANS_CFG.aoff;
+
+  function cuotaPlan(usd) {
+    const pv = usd * (1 - primaP/100);
+    const r  = plan.tasa / 12;
+    const res = pv * plan.residual;
+    if (r === 0) return Math.round((pv - res) / meses);
+    return Math.round((pv*r - res*r/Math.pow(1+r,meses)) / (1-Math.pow(1+r,-meses)));
+  }
+
+  const CAR_COLORS = ['#CC0000','#1E5C08','#7A4A04','#1A4A8B'];
+  const prices = cars.map(c => c.usd);
+  const cuotas = cars.map(c => cuotaPlan(c.usd));
+  const maxPrice = Math.max(...prices);
+  const maxCuota = Math.max(...cuotas);
+
+  // SVG layout
+  const BAR_H=160, BAR_W=70, GAP_IN=12, GAP_GR=56, PAD_L=44, PAD_R=16, PAD_TOP=28;
+  const FLOOR = BAR_H + PAD_TOP;
+  const n = cars.length;
+  const groupW = n * BAR_W + (n-1) * GAP_IN;
+  const totalW = PAD_L + groupW + GAP_GR + groupW + PAD_R;
+  const totalH = FLOOR + 72;
+
+  let bars = '', guides = '', legend = '';
+
+  // Guide lines
+  [25,50,75,100].forEach(pct => {
+    const y = FLOOR - Math.round((pct/100)*BAR_H);
+    guides += `<line x1="${PAD_L-4}" y1="${y}" x2="${totalW-PAD_R}" y2="${y}" stroke="#F0F0F0" stroke-width="1"/>
+               <text x="${PAD_L-7}" y="${y+4}" text-anchor="end" font-size="8" fill="#C0C0C0" font-family="Poppins,sans-serif">${pct}%</text>`;
+  });
+
+  // Baseline
+  guides += `<line x1="${PAD_L-4}" y1="${FLOOR}" x2="${totalW-PAD_R}" y2="${FLOOR}" stroke="#E8E8E8" stroke-width="1.5"/>`;
+
+  // Divider
+  const divX = PAD_L + groupW + GAP_GR/2;
+  guides += `<line x1="${divX}" y1="${PAD_TOP-10}" x2="${divX}" y2="${FLOOR+4}" stroke="#E0E0E0" stroke-width="1.5" stroke-dasharray="5 3"/>`;
+
+  // Group 1: Precios
+  const g1x = PAD_L;
+  cars.forEach((car,i) => {
+    const col = CAR_COLORS[i%4];
+    const bx  = g1x + i*(BAR_W+GAP_IN);
+    const bh  = Math.max(6, Math.round((car.usd/maxPrice)*BAR_H));
+    const by  = FLOOR - bh;
+    bars += `<rect x="${bx}" y="${by}" width="${BAR_W}" height="${bh}" fill="${col}" rx="4" opacity="0.9"/>
+             <text x="${bx+BAR_W/2}" y="${by-6}" text-anchor="middle" font-size="10" font-weight="700" fill="${col}" font-family="Poppins,sans-serif">$${car.usd.toLocaleString()}</text>
+             <text x="${bx+BAR_W/2}" y="${FLOOR+16}" text-anchor="middle" font-size="10" font-weight="600" fill="#555" font-family="Poppins,sans-serif">${car.name}</text>`;
+  });
+  bars += `<text x="${g1x+groupW/2}" y="${FLOOR+34}" text-anchor="middle" font-size="11" font-weight="700" fill="#888" font-family="Poppins,sans-serif">💵 Precio (USD)</text>`;
+
+  // Group 2: Cuotas for this plan
+  const g2x = PAD_L + groupW + GAP_GR;
+  cars.forEach((car,i) => {
+    const col = CAR_COLORS[i%4];
+    const bx  = g2x + i*(BAR_W+GAP_IN);
+    const bh  = Math.max(6, Math.round((cuotas[i]/maxCuota)*BAR_H));
+    const by  = FLOOR - bh;
+    bars += `<rect x="${bx}" y="${by}" width="${BAR_W}" height="${bh}" fill="${col}" rx="4" opacity="0.55"/>
+             <text x="${bx+BAR_W/2}" y="${by-6}" text-anchor="middle" font-size="10" font-weight="700" fill="${col}" font-family="Poppins,sans-serif">$${cuotas[i].toLocaleString()}</text>
+             <text x="${bx+BAR_W/2}" y="${FLOOR+16}" text-anchor="middle" font-size="10" font-weight="600" fill="#555" font-family="Poppins,sans-serif">${car.name}</text>`;
+  });
+  bars += `<text x="${g2x+groupW/2}" y="${FLOOR+34}" text-anchor="middle" font-size="11" font-weight="700" fill="#888" font-family="Poppins,sans-serif">📅 Cuota/mes · ${planName}</text>`;
+
+  // Legend
+  cars.forEach((car,i) => {
+    const col = CAR_COLORS[i%4];
+    legend += `<rect x="${PAD_L+i*110}" y="${FLOOR+50}" width="12" height="12" fill="${col}" rx="2"/>
+               <text x="${PAD_L+i*110+16}" y="${FLOOR+60}" font-size="10" fill="#555" font-family="Poppins,sans-serif">${car.name}</text>`;
+  });
+
+  const svg = `<svg viewBox="0 0 ${totalW} ${totalH}" style="width:100%;overflow:visible;display:block">
+    ${guides}${bars}${legend}
+  </svg>`;
+
+  document.getElementById('plan-eye-title').textContent = `👁 Precio vs Cuota · Plan ${planName}`;
+  document.getElementById('plan-eye-sub').textContent   = `${meses} meses · Prima ${primaP}% · TC ₡${tc} · Tasa ${(plan.tasa*100).toFixed(1)}% TEA`;
+  document.getElementById('plan-eye-chart').innerHTML   = svg;
+  document.getElementById('plan-eye-modal').classList.add('open');
+}
+
+function closePlanChart() {
+  document.getElementById('plan-eye-modal').classList.remove('open');
+}
 </script>
 
 <!-- ══ NEGOTIATE CHAT OVERLAY ══════════════════════ -->
