@@ -1185,6 +1185,101 @@ body{font-family:'Poppins',sans-serif;background:#0D0D0D;color:var(--text);min-h
 }
 #ticker-bar:hover > div { animation-play-state: paused; }
 
+
+/* ── KYC Multi-step Form ── */
+.kyc-step-tab {
+  padding:7px 14px;border-radius:20px;border:1.5px solid var(--border2);
+  background:#fff;color:var(--text3);font-size:11px;font-weight:700;
+  cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap;
+  display:flex;align-items:center;gap:6px;
+}
+.kyc-step-tab.active { background:var(--blue);color:#fff;border-color:var(--blue); }
+.kyc-step-tab.done   { background:#E4F4DA;color:#1E5C08;border-color:#A8D8A8; }
+.kyc-step-tab.done::before { content:'✓ '; }
+
+.kyc-panel { display:none; }
+.kyc-panel.active { display:block; animation:fadeUp .2s ease; }
+
+.kyc-section-title {
+  font-size:13px;font-weight:700;color:var(--blue);
+  padding:10px 0 8px;border-bottom:2px solid var(--blue);margin-bottom:14px;
+  display:flex;align-items:center;gap:8px;
+}
+.kyc-grid-2 { display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px; }
+.kyc-grid-3 { display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px; }
+.kyc-grid-1 { display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:12px; }
+
+.kyc-field label {
+  display:block;font-size:11px;font-weight:700;color:var(--text3);
+  text-transform:uppercase;letter-spacing:0.3px;margin-bottom:5px;
+}
+.kyc-field input, .kyc-field select, .kyc-field textarea {
+  width:100%;padding:9px 12px;border:1.5px solid var(--border2);border-radius:9px;
+  font-family:inherit;font-size:13px;outline:none;transition:border-color .15s;
+  background:#fff;color:var(--text);
+}
+.kyc-field input:focus, .kyc-field select:focus, .kyc-field textarea:focus {
+  border-color:var(--blue);
+}
+.kyc-field textarea { resize:vertical;min-height:70px; }
+
+.kyc-radio-group { display:flex;gap:10px;flex-wrap:wrap;margin-top:4px; }
+.kyc-radio-group label {
+  display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;
+  color:var(--text2);cursor:pointer;text-transform:none;letter-spacing:0;
+  padding:6px 12px;border:1.5px solid var(--border2);border-radius:20px;
+  transition:all .15s;
+}
+.kyc-radio-group label:has(input:checked) {
+  background:var(--blue);color:#fff;border-color:var(--blue);
+}
+.kyc-radio-group input[type=radio] { display:none; }
+.kyc-radio-group input[type=checkbox] { width:14px;height:14px;accent-color:var(--blue); }
+
+.kyc-checkbox-group { display:flex;flex-direction:column;gap:6px;margin-top:4px; }
+.kyc-checkbox-group label {
+  display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--text2);
+  cursor:pointer;line-height:1.5;text-transform:none;letter-spacing:0;font-weight:400;
+}
+.kyc-checkbox-group input[type=checkbox] { margin-top:2px;accent-color:var(--blue);width:14px;height:14px;flex-shrink:0; }
+
+.kyc-upload-zone {
+  border:2px dashed var(--border2);border-radius:12px;
+  padding:20px;text-align:center;cursor:pointer;
+  transition:all .15s;background:#FAFAFA;
+}
+.kyc-upload-zone:hover { border-color:var(--blue);background:#FFF0F0; }
+.kyc-upload-zone .upload-icon { font-size:28px;margin-bottom:6px; }
+.kyc-upload-zone .upload-text { font-size:12px;color:var(--text2); }
+.kyc-upload-zone .upload-hint { font-size:10px;color:var(--text3);margin-top:4px; }
+
+.kyc-uploaded-file {
+  display:flex;align-items:center;gap:10px;padding:8px 12px;
+  background:#E4F4DA;border-radius:8px;font-size:12px;color:#1E5C08;font-weight:600;
+  margin-bottom:6px;
+}
+
+.kyc-pep-grid { display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px; }
+.kyc-pep-item {
+  display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2);
+  padding:5px 8px;border:1px solid var(--border);border-radius:6px;cursor:pointer;
+}
+.kyc-pep-item:has(input:checked) { background:#FFF0F0;border-color:#CC0000;color:#CC0000; }
+.kyc-pep-item input[type=checkbox] { accent-color:#CC0000; }
+
+.kyc-ref-block {
+  border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;
+}
+
+.sig-wrap { position:relative;border:2px solid var(--border2);border-radius:12px;overflow:hidden;background:#FAFAFA; }
+#sig-canvas { display:block;width:100%;cursor:crosshair; }
+.sig-label { position:absolute;bottom:8px;right:12px;font-size:11px;color:var(--text3);pointer-events:none; }
+
+@media (max-width:600px) {
+  .kyc-grid-2,.kyc-grid-3 { grid-template-columns:1fr; }
+  .kyc-pep-grid { grid-template-columns:1fr; }
+}
+
 </style>
 </head>
 <body>
@@ -1705,46 +1800,51 @@ body{font-family:'Poppins',sans-serif;background:#0D0D0D;color:var(--text);min-h
          MÓDULO: KYC
     ════════════════════════════════════════════════════ -->
     <section id="mod-kyc" class="module">
-      <div class="page-title" style="display:flex;align-items:center;gap:10px">
-        Conozca a su Cliente
-        <span onclick="showKycInfo()" class="plan-info-btn" style="font-size:14px;width:22px;height:22px;flex-shrink:0" title="¿Qué es el KYC?">ℹ</span>
+      <!-- KYC Header -->
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:4px">
+        <div class="page-title" style="display:flex;align-items:center;gap:10px;margin-bottom:0">
+          Conozca a su Cliente
+          <span onclick="showKycInfo()" class="plan-info-btn" style="font-size:14px;width:22px;height:22px;flex-shrink:0" title="¿Qué es el KYC?">ℹ</span>
+        </div>
+        <!-- Tipo de persona toggle -->
+        <div style="display:flex;border:2px solid var(--border2);border-radius:10px;overflow:hidden">
+          <button id="kyc-tipo-fisica" onclick="switchKycTipo('fisica')"
+            style="padding:7px 18px;background:#CC0000;color:#fff;border:none;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">
+            👤 Persona Física
+          </button>
+          <button id="kyc-tipo-juridica" onclick="switchKycTipo('juridica')"
+            style="padding:7px 18px;background:#fff;color:#888;border:none;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">
+            🏢 Persona Jurídica
+          </button>
+        </div>
       </div>
-      <div class="page-sub">Proceso de aprobación pos-cotización · Firma electrónica · 100% digital</div>
-      <div class="kyc-layout">
-        <div class="kyc-prog-card">
-          <div class="kyc-prog-top"><div><div class="kyc-prog-title">Solicitud en proceso</div><div class="kyc-prog-client">Carlos Mora Jiménez · Toyota RAV4 2025 · Plan Premium</div></div><div class="kyc-prog-pct" id="kyc-pct">60%</div></div>
-          <div class="prog-bar"><div class="prog-fill" id="kyc-fill" style="width:60%"></div></div>
-          <div class="kyc-steps-mini"><div class="kyc-step-dot done"></div><div class="kyc-step-dot done"></div><div class="kyc-step-dot curr"></div><div class="kyc-step-dot"></div><div class="kyc-step-dot"></div></div>
-        </div>
-        <div class="kyc-block"><div class="kyc-block-head"><div class="kyc-block-icon done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div><span class="kyc-block-title">Identificación del cliente</span><span class="badge badge-g">✓ Verificado</span></div></div>
-        <div class="kyc-block">
-          <div class="kyc-block-head"><div class="kyc-block-icon active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div><span class="kyc-block-title">Documentos requeridos</span><span class="badge badge-b">En proceso</span></div>
-          <div class="kyc-block-body">
-            <div class="doc-file"><span class="doc-file-icon">📄</span><span class="doc-file-name">cedula_identidad_frente.pdf</span><span class="doc-file-ok">✓</span></div>
-            <div class="doc-file"><span class="doc-file-icon">📄</span><span class="doc-file-name">comprobante_ingresos.pdf</span><span class="doc-file-ok">✓</span></div>
-            <div class="upload-area" onclick="fakeUpload(this)"><div class="upload-icon">⬆</div><div class="upload-text">Arrastra tu <strong>recibo de servicios</strong> o <span class="upload-link">selecciona</span></div><div class="upload-meta">PDF, JPG, PNG · máx. 5 MB</div></div>
+      <div class="page-sub">Formulario oficial CAFSA · 7-FOR-057 / 7-FOR-058 · Ley 7786 · Ley 8968</div>
+      <!-- Progress bar -->
+      <div class="kyc-prog-card" style="margin-bottom:20px">
+        <div class="kyc-prog-top">
+          <div>
+            <div class="kyc-prog-title" id="kyc-form-title">Formulario · Persona Física</div>
+            <div class="kyc-prog-client">CAFSA Grupo Financiero · Código 7-FOR-057 V18</div>
           </div>
+          <div class="kyc-prog-pct" id="kyc-pct">0%</div>
         </div>
-        <div class="kyc-block">
-          <div class="kyc-block-head"><div class="kyc-block-icon pend"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div><span class="kyc-block-title">Consentimiento · Ley 8968</span><span class="badge badge-a">Pendiente firma</span></div>
-          <div class="kyc-block-body">
-            <div class="consent-scroll">Por medio del presente documento, el suscrito <strong>Carlos Mora Jiménez</strong>, cédula 1-1234-5678, autorizo a CAFSA – Compañía Financiera S.A. y a Grupo Purdy Motor S.A. a recopilar, procesar y compartir mis datos personales con fines de evaluación crediticia y gestión de productos financieros, de conformidad con la Ley 8968 de Costa Rica. Declaro que la información es veraz y completa.</div>
-            <div class="consent-check-item"><input type="checkbox" id="c1" onchange="updateKycProgress()"><label for="c1">Acepto el tratamiento de mis datos (Ley 8968).</label></div>
-            <div class="consent-check-item"><input type="checkbox" id="c2" onchange="updateKycProgress()"><label for="c2">Autorizo intercambio de información CAFSA ↔ Purdy Motor.</label></div>
-            <div class="consent-check-item"><input type="checkbox" id="c3" onchange="updateKycProgress()"><label for="c3">Confirmo que los documentos son auténticos y de mi titularidad.</label></div>
-          </div>
-        </div>
-        <div class="kyc-block">
-          <div class="kyc-block-head"><div class="kyc-block-icon pend"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/></svg></div><span class="kyc-block-title">Firma electrónica</span><span class="badge badge-a">Pendiente</span></div>
-          <div class="kyc-block-body">
-            <div style="font-size:12px;color:var(--text2);margin-bottom:10px">Firme con el dedo o el mouse para aceptar los términos.</div>
-            <div class="sig-wrap"><canvas id="sig-canvas" width="560" height="110"></canvas><div class="sig-label">✏ Firme aquí</div></div>
-            <div class="sig-actions"><button class="btn btn-ghost btn-sm" onclick="clearSig()">Borrar</button></div>
-          </div>
-        </div>
-        <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:8px;margin-bottom:32px">
-          <button class="btn btn-ghost">Guardar borrador</button>
-          <button class="btn btn-gold" style="padding:10px 28px;font-size:14px" onclick="submitKyc(this)">Enviar para aprobación →</button>
+        <div class="prog-bar"><div class="prog-fill" id="kyc-fill" style="width:0%"></div></div>
+        <div style="display:flex;gap:4px;margin-top:8px" id="kyc-step-dots"></div>
+      </div>
+
+      <!-- Step tabs -->
+      <div style="display:flex;gap:6px;margin-bottom:18px;overflow-x:auto;padding-bottom:4px" id="kyc-step-tabs"></div>
+
+      <!-- Step panels -->
+      <div id="kyc-panels"></div>
+
+      <!-- Navigation -->
+      <div style="display:flex;gap:10px;justify-content:space-between;margin-top:20px;margin-bottom:32px">
+        <button class="btn btn-ghost" id="kyc-prev-btn" onclick="kycPrev()" style="display:none">← Anterior</button>
+        <div style="display:flex;gap:10px;margin-left:auto">
+          <button class="btn btn-ghost" onclick="alert('Borrador guardado ✓')">Guardar borrador</button>
+          <button class="btn btn-primary" id="kyc-next-btn" onclick="kycNext()">Siguiente →</button>
+          <button class="btn btn-gold" id="kyc-submit-btn" onclick="submitKyc(this)" style="display:none;padding:10px 28px;font-size:14px">Enviar para aprobación →</button>
         </div>
       </div>
     </section>
@@ -3246,6 +3346,847 @@ function openPredChat() {
 }
 
 /* ── KYC progress ─────────────────────────────────── */
+/* ══ KYC FORM ENGINE ════════════════════════════════════ */
+let kycTipo = 'fisica'; // 'fisica' | 'juridica'
+let kycCurrentStep = 0;
+let kycDoneSteps = new Set();
+
+// ── Step definitions ─────────────────────────────────────
+const KYC_STEPS_FISICA = [
+  { id:'identificacion', label:'Identificación', icon:'🪪' },
+  { id:'laboral',        label:'Inf. Laboral',  icon:'💼' },
+  { id:'conyuge',        label:'Cónyuge',       icon:'👫' },
+  { id:'transaccional',  label:'Actividad',     icon:'💰' },
+  { id:'pep',            label:'PEP',           icon:'🏛' },
+  { id:'beneficiario',   label:'Beneficiario',  icon:'👤' },
+  { id:'referencias',    label:'Referencias',   icon:'📋' },
+  { id:'documentos',     label:'Documentos',    icon:'📎' },
+  { id:'consentimiento', label:'Consentimiento',icon:'✍' },
+];
+
+const KYC_STEPS_JURIDICA = [
+  { id:'empresa',        label:'Empresa',       icon:'🏢' },
+  { id:'rep_legal',      label:'Rep. Legal',    icon:'👔' },
+  { id:'agente',         label:'Ag. Residente', icon:'🏛' },
+  { id:'transaccional',  label:'Actividad',     icon:'💰' },
+  { id:'pep',            label:'PEP',           icon:'🏛' },
+  { id:'beneficiario',   label:'Beneficiario',  icon:'👤' },
+  { id:'referencias',    label:'Referencias',   icon:'📋' },
+  { id:'documentos',     label:'Documentos',    icon:'📎' },
+  { id:'declaracion',    label:'Declaración',   icon:'✍' },
+];
+
+// ── Panel HTML builders ──────────────────────────────────
+function buildKycPanelFisica(stepId) {
+  switch(stepId) {
+    case 'identificacion': return `
+      <div class="kyc-section-title">🪪 Información del Solicitante · Persona Física</div>
+      <div style="background:#FFF8E6;border-radius:10px;padding:10px 14px;font-size:11px;color:#7A4A04;margin-bottom:14px;border-left:3px solid #F5A623">
+        Formulario 7-FOR-057 · Conozca a su Cliente Persona Física V18 · CAFSA Grupo Financiero
+      </div>
+      <!-- Productos -->
+      <div class="kyc-field" style="margin-bottom:14px">
+        <label>Productos solicitados</label>
+        <div class="kyc-radio-group">
+          <label><input type="checkbox"> Crédito</label>
+          <label><input type="checkbox" checked> Arrendamiento</label>
+          <label><input type="checkbox"> Certificado de Inversión</label>
+          <label><input type="checkbox"> Tarjeta de Crédito</label>
+        </div>
+      </div>
+      <div class="kyc-grid-2">
+        <div class="kyc-field" style="grid-column:1/-1">
+          <label>Nombre completo *</label>
+          <input type="text" value="María Alvarado Solano" placeholder="Nombre completo según cédula">
+        </div>
+      </div>
+      <div class="kyc-grid-3">
+        <div class="kyc-field">
+          <label>Tipo de identificación</label>
+          <select>
+            <option selected>Cédula</option>
+            <option>Pasaporte</option>
+            <option>DIMEX</option>
+            <option>DIDI</option>
+          </select>
+        </div>
+        <div class="kyc-field">
+          <label>Número de identificación *</label>
+          <input type="text" value="1-2345-6789" placeholder="X-XXXX-XXXX">
+        </div>
+        <div class="kyc-field">
+          <label>Fecha de vencimiento ID</label>
+          <input type="date">
+        </div>
+      </div>
+      <div class="kyc-grid-3">
+        <div class="kyc-field">
+          <label>Fecha de nacimiento *</label>
+          <input type="date" value="1985-03-15">
+        </div>
+        <div class="kyc-field">
+          <label>País de nacimiento</label>
+          <input type="text" value="Costa Rica">
+        </div>
+        <div class="kyc-field">
+          <label>Nacionalidad</label>
+          <input type="text" value="Costarricense">
+        </div>
+      </div>
+      <div class="kyc-grid-3">
+        <div class="kyc-field">
+          <label>Sexo</label>
+          <div class="kyc-radio-group">
+            <label><input type="radio" name="sexo" value="M"> M</label>
+            <label><input type="radio" name="sexo" value="F" checked> F</label>
+          </div>
+        </div>
+        <div class="kyc-field">
+          <label>Estado civil</label>
+          <select>
+            <option>Soltero(a)</option>
+            <option selected>Casado(a)</option>
+            <option>Divorciado(a)</option>
+            <option>Viudo(a)</option>
+            <option>Unión libre</option>
+          </select>
+        </div>
+        <div class="kyc-field">
+          <label>¿Ciudadano/residente EE.UU.?</label>
+          <div class="kyc-radio-group">
+            <label><input type="radio" name="eeuu" value="si"> Sí</label>
+            <label><input type="radio" name="eeuu" value="no" checked> No</label>
+          </div>
+        </div>
+      </div>
+      <div class="kyc-section-title" style="margin-top:10px">📍 Dirección de residencia</div>
+      <div class="kyc-grid-3">
+        <div class="kyc-field">
+          <label>Provincia</label>
+          <select><option>San José</option><option>Alajuela</option><option>Cartago</option><option>Heredia</option><option>Guanacaste</option><option>Puntarenas</option><option>Limón</option></select>
+        </div>
+        <div class="kyc-field">
+          <label>Cantón</label>
+          <input type="text" value="Escazú">
+        </div>
+        <div class="kyc-field">
+          <label>Distrito</label>
+          <input type="text" value="Escazú Centro">
+        </div>
+      </div>
+      <div class="kyc-grid-1">
+        <div class="kyc-field">
+          <label>Otras señas / dirección exacta</label>
+          <input type="text" placeholder="Ej: 200m norte del CENADA, casa blanca con portón verde">
+        </div>
+      </div>
+      <div class="kyc-grid-3">
+        <div class="kyc-field">
+          <label>Teléfono residencia</label>
+          <input type="tel" placeholder="2XXX-XXXX">
+        </div>
+        <div class="kyc-field">
+          <label>Teléfono celular *</label>
+          <input type="tel" value="8888-9999">
+        </div>
+        <div class="kyc-field">
+          <label>Correo electrónico *</label>
+          <input type="email" value="maria.alvarado@gmail.com">
+        </div>
+      </div>
+      <div class="kyc-grid-2">
+        <div class="kyc-field">
+          <label>¿Residente fiscal en otro país?</label>
+          <div class="kyc-radio-group"><label><input type="radio" name="resfis" value="si"> Sí</label><label><input type="radio" name="resfis" value="no" checked> No</label></div>
+        </div>
+        <div class="kyc-field">
+          <label>Código postal (si aplica)</label>
+          <input type="text" placeholder="10XXX">
+        </div>
+      </div>`;
+
+    case 'laboral': return `
+      <div class="kyc-section-title">💼 Información Laboral</div>
+      <div class="kyc-field" style="margin-bottom:14px">
+        <label>Tipo de empleo</label>
+        <div class="kyc-radio-group">
+          <label><input type="radio" name="empleo" checked> Asalariado</label>
+          <label><input type="radio" name="empleo"> Profesional Independiente</label>
+          <label><input type="radio" name="empleo"> Independiente No Profesional</label>
+          <label><input type="radio" name="empleo"> Pensionado / Jubilado</label>
+        </div>
+      </div>
+      <div class="kyc-grid-2">
+        <div class="kyc-field">
+          <label>Profesión / Ocupación</label>
+          <input type="text" value="Gerente Comercial">
+        </div>
+        <div class="kyc-field">
+          <label>Nombre del patrono / empresa</label>
+          <input type="text" value="Tech Solutions S.A.">
+        </div>
+      </div>
+      <div class="kyc-grid-3">
+        <div class="kyc-field">
+          <label>Ingreso bruto mensual (₡)</label>
+          <input type="text" value="1,450,000">
+        </div>
+        <div class="kyc-field">
+          <label>Teléfono de trabajo</label>
+          <input type="tel" placeholder="2XXX-XXXX">
+        </div>
+        <div class="kyc-field">
+          <label>Antigüedad laboral</label>
+          <select><option>Menos de 1 año</option><option>1-3 años</option><option selected>3-5 años</option><option>Más de 5 años</option></select>
+        </div>
+      </div>
+      <div class="kyc-grid-1">
+        <div class="kyc-field">
+          <label>Dirección del trabajo</label>
+          <input type="text" placeholder="Provincia, Cantón, Otras señas">
+        </div>
+      </div>
+      <div class="kyc-grid-2">
+        <div class="kyc-field">
+          <label>Compromisos crediticios con otras entidades no reguladas</label>
+          <div class="kyc-radio-group"><label><input type="radio" name="credext" value="si"> Sí</label><label><input type="radio" name="credext" value="no" checked> No</label></div>
+        </div>
+        <div class="kyc-field">
+          <label>Si tiene, detalle monto mensual (₡)</label>
+          <input type="text" placeholder="0">
+        </div>
+      </div>`;
+
+    case 'conyuge': return `
+      <div class="kyc-section-title">👫 Información del Cónyuge (si aplica)</div>
+      <div style="background:#F0F8FF;border-radius:10px;padding:10px 14px;font-size:12px;color:#444;margin-bottom:14px">
+        Complete solo si su estado civil es Casado(a) o Unión Libre
+      </div>
+      <div class="kyc-grid-2">
+        <div class="kyc-field" style="grid-column:1/-1">
+          <label>Nombre completo del cónyuge</label>
+          <input type="text" placeholder="Nombre según identificación">
+        </div>
+      </div>
+      <div class="kyc-grid-3">
+        <div class="kyc-field">
+          <label>Tipo de identificación</label>
+          <select><option>Cédula</option><option>Pasaporte</option><option>DIMEX</option></select>
+        </div>
+        <div class="kyc-field">
+          <label>Número de identificación</label>
+          <input type="text" placeholder="X-XXXX-XXXX">
+        </div>
+        <div class="kyc-field">
+          <label>Fecha de nacimiento</label>
+          <input type="date">
+        </div>
+      </div>
+      <div class="kyc-grid-3">
+        <div class="kyc-field">
+          <label>Profesión / Ocupación</label>
+          <input type="text" placeholder="Ej: Ingeniero">
+        </div>
+        <div class="kyc-field">
+          <label>Nombre del patrono</label>
+          <input type="text" placeholder="Empresa o independiente">
+        </div>
+        <div class="kyc-field">
+          <label>Ingreso bruto mensual (₡)</label>
+          <input type="text" placeholder="0">
+        </div>
+      </div>
+      <div class="kyc-grid-2">
+        <div class="kyc-field">
+          <label>Teléfono celular</label>
+          <input type="tel" placeholder="XXXX-XXXX">
+        </div>
+        <div class="kyc-field">
+          <label>Correo electrónico</label>
+          <input type="email" placeholder="correo@ejemplo.com">
+        </div>
+      </div>`;
+
+    case 'transaccional': return `
+      <div class="kyc-section-title">💰 Actividad Transaccional Esperada</div>
+      <div class="kyc-field" style="margin-bottom:14px">
+        <label>Monto de operaciones mensuales estimadas en CAFSA</label>
+        <div class="kyc-radio-group" style="flex-direction:column;align-items:flex-start">
+          <label><input type="radio" name="monto_mes"> Hasta $1,000</label>
+          <label><input type="radio" name="monto_mes"> De $1,001 a $5,000</label>
+          <label><input type="radio" name="monto_mes" checked> De $5,001 a $10,000</label>
+          <label><input type="radio" name="monto_mes"> De $10,001 a $30,000</label>
+          <label><input type="radio" name="monto_mes"> De $30,001 a $50,000</label>
+          <label><input type="radio" name="monto_mes"> Más de $100,000</label>
+        </div>
+      </div>
+      <div class="kyc-field" style="margin-bottom:14px">
+        <label>Monto transaccional mensual esperado en efectivo</label>
+        <div class="kyc-radio-group">
+          <label><input type="radio" name="efectivo" checked> No realiza en efectivo</label>
+          <label><input type="radio" name="efectivo"> Menos de $5,000</label>
+          <label><input type="radio" name="efectivo"> $5,000 - $10,000</label>
+          <label><input type="radio" name="efectivo"> Más de $10,000</label>
+        </div>
+      </div>
+      <div class="kyc-section-title" style="margin-top:10px">🏦 Origen de los Fondos</div>
+      <div class="kyc-field">
+        <label>El dinero para este financiamiento proviene de:</label>
+        <div class="kyc-checkbox-group">
+          <label><input type="checkbox" checked> Salario / Ingresos laborales</label>
+          <label><input type="checkbox"> Actividad empresarial propia</label>
+          <label><input type="checkbox"> Rendimientos de inversiones</label>
+          <label><input type="checkbox"> Venta de bienes / inmuebles</label>
+          <label><input type="checkbox"> Ahorro personal</label>
+          <label><input type="checkbox"> Herencia / donación</label>
+          <label><input type="checkbox"> Otro (especifique):</label>
+        </div>
+      </div>
+      <div class="kyc-section-title" style="margin-top:10px">🎯 Razón de la Relación Comercial</div>
+      <div class="kyc-field">
+        <label>¿Por qué establece relación con CAFSA?</label>
+        <div class="kyc-checkbox-group">
+          <label><input type="checkbox" checked> Financiamiento de vehículo</label>
+          <label><input type="checkbox"> Arrendamiento vehicular</label>
+          <label><input type="checkbox"> Inversión</label>
+          <label><input type="checkbox"> Otro:</label>
+        </div>
+      </div>
+      <div class="kyc-field" style="margin-top:10px">
+        <label>¿Está sujeto a autorización del BCCR? (Artículo 15 Ley 7786)</label>
+        <div class="kyc-radio-group"><label><input type="radio" name="bccr"> Sí</label><label><input type="radio" name="bccr" checked> No</label></div>
+      </div>`;
+
+    case 'pep': return `
+      <div class="kyc-section-title">🏛 Personas Expuestas Políticamente (PEP)</div>
+      <div style="background:#FFF8F8;border-radius:10px;padding:10px 14px;font-size:12px;color:#8B1C1C;margin-bottom:14px;border-left:3px solid #CC0000">
+        Ley 7786 · Artículo 15 BIS (APNFD's). Indique si usted o su cónyuge ocupan o han ocupado alguno de los siguientes cargos:
+      </div>
+      <div class="kyc-pep-grid">
+        ${['Diputado/a','Presidente/Vicepresidente de la República','Ministro/a','Viceministro/a','Magistrado/a Poder Judicial','Contralor / Sub-contralor','Defensor/a de los Habitantes','Procurador/a General','Fiscal General','Rector/a / Vicerrector/a','Regulador/a General','Superintendente / Intendente','Contador Nacional','Tesorero Nacional','Oficial Mayor de Ministerio','Presidente Ejecutivo','Regidor/a propietario/suplente','Alcalde Municipal / Vicealcalde','Jefe de misión diplomática'].map(c =>
+          \`<label class="kyc-pep-item"><input type="checkbox"> \${c}</label>\`
+        ).join('')}
+      </div>
+      <div class="kyc-grid-2" style="margin-top:14px">
+        <div class="kyc-field">
+          <label>Inicio del período (si aplica)</label>
+          <input type="date">
+        </div>
+        <div class="kyc-field">
+          <label>Fin del período (si aplica)</label>
+          <input type="date">
+        </div>
+      </div>
+      <div class="kyc-field" style="margin-top:10px">
+        <label>¿Es usted o su cónyuge PEP en otro país?</label>
+        <div class="kyc-radio-group"><label><input type="radio" name="pep_ext"> Sí</label><label><input type="radio" name="pep_ext" checked> No</label></div>
+      </div>`;
+
+    case 'beneficiario': return `
+      <div class="kyc-section-title">👤 Beneficiario Final</div>
+      <div style="background:#F0F8FF;border-radius:10px;padding:10px 14px;font-size:12px;color:#444;margin-bottom:14px">
+        Cualquier persona física que posee el control de la operación o que recibe beneficios asociados (ej: que haga uso del bien).
+      </div>
+      <div class="kyc-field" style="margin-bottom:14px">
+        <label>El beneficiario final es el mismo solicitante</label>
+        <div class="kyc-radio-group"><label><input type="radio" name="bf_mismo" checked> Sí</label><label><input type="radio" name="bf_mismo"> No</label></div>
+      </div>
+      <div id="bf-extra-fisica" style="display:none">
+        <div class="kyc-grid-2">
+          <div class="kyc-field">
+            <label>Nombre completo del beneficiario</label>
+            <input type="text">
+          </div>
+          <div class="kyc-field">
+            <label>Número de identificación</label>
+            <input type="text">
+          </div>
+        </div>
+        <div class="kyc-grid-3">
+          <div class="kyc-field">
+            <label>Fecha de nacimiento</label>
+            <input type="date">
+          </div>
+          <div class="kyc-field">
+            <label>Teléfono</label>
+            <input type="tel">
+          </div>
+          <div class="kyc-field">
+            <label>Relación con el solicitante</label>
+            <input type="text" placeholder="Ej: Cónyuge, hijo/a">
+          </div>
+        </div>
+        <div class="kyc-field">
+          <label>Dirección del beneficiario</label>
+          <input type="text" placeholder="Provincia, Cantón, Otras señas">
+        </div>
+      </div>`;
+
+    case 'referencias': return `
+      <div class="kyc-section-title">📋 Referencias Comerciales / Personales</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:14px">Proporcione al menos 2 referencias</div>
+      ${[1,2].map(i => \`
+      <div class="kyc-ref-block">
+        <div style="font-size:12px;font-weight:700;color:var(--blue);margin-bottom:10px">Referencia #\${i}</div>
+        <div class="kyc-grid-3">
+          <div class="kyc-field">
+            <label>Nombre completo</label>
+            <input type="text">
+          </div>
+          <div class="kyc-field">
+            <label>Teléfono</label>
+            <input type="tel">
+          </div>
+          <div class="kyc-field">
+            <label>Relación</label>
+            <input type="text" placeholder="Ej: Colega, amigo">
+          </div>
+        </div>
+      </div>\`).join('')}`;
+
+    case 'documentos': return `
+      <div class="kyc-section-title">📎 Documentos Requeridos · Persona Física</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:14px">Suba una copia digital de cada documento. Formatos: PDF, JPG, PNG · Máx. 5 MB por archivo.</div>
+      ${[
+        ['🪪 Cédula de identidad (frente y reverso)', 'cedula.pdf', true],
+        ['💰 Comprobante de ingresos (3 últimos meses)', '', false],
+        ['🏠 Recibo de servicios públicos (agua, luz, teléfono)', '', false],
+        ['📊 Declaración de renta (si aplica)', '', false],
+        ['📑 Estados de cuenta bancarios (3 últimos meses)', '', false],
+      ].map(([label, fname, done]) => \`
+      <div style="margin-bottom:12px">
+        <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:6px">\${label}</div>
+        \${done
+          ? \`<div class="kyc-uploaded-file">✓ \${fname} <span style="margin-left:auto;font-size:10px;opacity:.6">Cargado</span></div>\`
+          : \`<div class="kyc-upload-zone" onclick="fakeKycUpload(this)">
+              <div class="upload-icon">⬆</div>
+              <div class="upload-text">Arrastrá o hacé clic para seleccionar</div>
+              <div class="upload-hint">PDF, JPG, PNG · máx. 5 MB</div>
+             </div>\`
+        }
+      </div>\`).join('')}`;
+
+    case 'consentimiento': return `
+      <div class="kyc-section-title">✍ Consentimiento · Declaración Jurada · Firma</div>
+      <div class="consent-scroll" style="height:180px;overflow-y:auto;border:1px solid var(--border);border-radius:10px;padding:14px;font-size:12px;line-height:1.7;color:var(--text2);background:#FAFAFA;margin-bottom:14px">
+        <strong>DECLARACIÓN JURADA</strong><br>
+        Declaro bajo la fe de juramento solemne, con conocimiento de las penas con que el Ordenamiento Jurídico costarricense castiga el delito de perjurio, que toda la información proporcionada en el presente documento es exacta, correcta, inequívoca, verdadera y demostrable. Que los ingresos indicados NO provienen de actividades relacionadas con legitimación de capitales. Con el fin de mantener actualizada la información, me comprometo a informar sobre las variaciones en los datos en un plazo de 30 días hábiles.<br><br>
+        <strong>AUTORIZACIÓN LEY 8968</strong><br>
+        Autorizo a CAFSA – Grupo Financiero para recopilar, procesar y compartir mis datos personales con fines de evaluación crediticia, de conformidad con la Ley 8968 de Protección de la Persona frente al Tratamiento de sus Datos Personales.<br><br>
+        <strong>CICAC / SUGEF</strong><br>
+        Autorizo a Grupo Financiero CAFSA para realizar la actualización de mi información en el Sistema CICAC.
+      </div>
+      <div class="kyc-checkbox-group" style="margin-bottom:16px">
+        <label><input type="checkbox" id="c1" onchange="updateKycProgress()"> Acepto el tratamiento de mis datos personales (Ley 8968).</label>
+        <label><input type="checkbox" id="c2" onchange="updateKycProgress()"> Autorizo intercambio de información entre CAFSA y Grupo Purdy Motor.</label>
+        <label><input type="checkbox" id="c3" onchange="updateKycProgress()"> Confirmo que los documentos son auténticos y de mi titularidad.</label>
+        <label><input type="checkbox" id="c4" onchange="updateKycProgress()"> Autorizo actualización en Sistema CICAC · SUGEF.</label>
+        <label><input type="checkbox" id="c5" onchange="updateKycProgress()"> Declaro bajo juramento que los ingresos no provienen de actividades ilícitas (Art. 15 Ley 7786).</label>
+      </div>
+      <div class="kyc-section-title">✏ Firma Electrónica</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:10px">Firme con el dedo o mouse para aceptar los términos y condiciones.</div>
+      <div class="sig-wrap"><canvas id="sig-canvas" width="600" height="120"></canvas><div class="sig-label">✏ Firme aquí</div></div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn btn-ghost btn-sm" onclick="clearSig()">Borrar firma</button>
+      </div>`;
+
+    default: return '<div style="padding:20px;color:var(--text3)">Sección en construcción</div>';
+  }
+}
+
+function buildKycPanelJuridica(stepId) {
+  switch(stepId) {
+    case 'empresa': return `
+      <div class="kyc-section-title">🏢 Información de la Empresa Solicitante</div>
+      <div style="background:#FFF8E6;border-radius:10px;padding:10px 14px;font-size:11px;color:#7A4A04;margin-bottom:14px;border-left:3px solid #F5A623">
+        Formulario 7-FOR-058 · Conozca a su Cliente Persona Jurídica V13 · CAFSA Grupo Financiero
+      </div>
+      <div class="kyc-field" style="margin-bottom:14px">
+        <label>Productos solicitados</label>
+        <div class="kyc-radio-group">
+          <label><input type="checkbox"> Crédito</label>
+          <label><input type="checkbox" checked> Arrendamiento</label>
+          <label><input type="checkbox"> Certificado de Inversión</label>
+        </div>
+      </div>
+      <div class="kyc-grid-2">
+        <div class="kyc-field">
+          <label>Razón Social Completa *</label>
+          <input type="text" placeholder="Nombre legal de la empresa">
+        </div>
+        <div class="kyc-field">
+          <label>Nombre Comercial</label>
+          <input type="text" placeholder="Nombre comercial">
+        </div>
+      </div>
+      <div class="kyc-grid-3">
+        <div class="kyc-field">
+          <label>N° Cédula Jurídica *</label>
+          <input type="text" placeholder="3-XXX-XXXXXX">
+        </div>
+        <div class="kyc-field">
+          <label>Fecha de vencimiento</label>
+          <input type="date">
+        </div>
+        <div class="kyc-field">
+          <label>Tipo de persona jurídica</label>
+          <select><option selected>Sociedad Anónima</option><option>Sociedad Responsabilidad Limitada</option><option>Asociación</option><option>Fundación</option><option>Otro</option></select>
+        </div>
+      </div>
+      <div class="kyc-grid-3">
+        <div class="kyc-field">
+          <label>Fecha de constitución</label>
+          <input type="date">
+        </div>
+        <div class="kyc-field">
+          <label>País de constitución</label>
+          <input type="text" value="Costa Rica">
+        </div>
+        <div class="kyc-field">
+          <label>Cantidad de empleados</label>
+          <input type="number" placeholder="0">
+        </div>
+      </div>
+      <div class="kyc-grid-3">
+        <div class="kyc-field">
+          <label>Teléfonos de la compañía</label>
+          <input type="tel">
+        </div>
+        <div class="kyc-field">
+          <label>Página web</label>
+          <input type="url" placeholder="https://www.empresa.cr">
+        </div>
+        <div class="kyc-field">
+          <label>Correo electrónico empresa</label>
+          <input type="email" placeholder="info@empresa.cr">
+        </div>
+      </div>
+      <div class="kyc-section-title" style="margin-top:10px">📍 Domicilio Social</div>
+      <div class="kyc-grid-3">
+        <div class="kyc-field">
+          <label>Provincia</label>
+          <select><option>San José</option><option>Alajuela</option><option>Cartago</option><option>Heredia</option><option>Guanacaste</option><option>Puntarenas</option><option>Limón</option></select>
+        </div>
+        <div class="kyc-field">
+          <label>Cantón</label>
+          <input type="text">
+        </div>
+        <div class="kyc-field">
+          <label>Distrito</label>
+          <input type="text">
+        </div>
+      </div>
+      <div class="kyc-grid-1">
+        <div class="kyc-field">
+          <label>Otras señas</label>
+          <input type="text">
+        </div>
+      </div>
+      <div class="kyc-section-title" style="margin-top:10px">🏭 Actividad Económica</div>
+      <div class="kyc-field" style="margin-bottom:12px">
+        <label>Sector económico</label>
+        <div class="kyc-radio-group">
+          <label><input type="radio" name="sector"> Comercial</label>
+          <label><input type="radio" name="sector"> Industrial</label>
+          <label><input type="radio" name="sector"> Turismo</label>
+          <label><input type="radio" name="sector" checked> Servicios</label>
+          <label><input type="radio" name="sector"> Agrícola</label>
+          <label><input type="radio" name="sector"> Construcción</label>
+          <label><input type="radio" name="sector"> Otro</label>
+        </div>
+      </div>
+      <div class="kyc-grid-2">
+        <div class="kyc-field">
+          <label>Detalle de la actividad económica</label>
+          <textarea placeholder="Describa brevemente la actividad principal de la empresa"></textarea>
+        </div>
+        <div class="kyc-field">
+          <label>Temporalidad</label>
+          <div class="kyc-radio-group" style="flex-direction:column;align-items:flex-start">
+            <label><input type="radio" name="temp" checked> Mensual</label>
+            <label><input type="radio" name="temp"> Trimestral</label>
+            <label><input type="radio" name="temp"> Semestral</label>
+            <label><input type="radio" name="temp"> Anual</label>
+          </div>
+        </div>
+      </div>
+      <div class="kyc-field">
+        <label>¿La empresa genera moneda extranjera?</label>
+        <div class="kyc-radio-group"><label><input type="radio" name="monext"> Sí</label><label><input type="radio" name="monext" checked> No</label></div>
+      </div>`;
+
+    case 'rep_legal': return `
+      <div class="kyc-section-title">👔 Información del Representante Legal</div>
+      <div class="kyc-grid-2">
+        <div class="kyc-field" style="grid-column:1/-1">
+          <label>Nombre completo *</label>
+          <input type="text">
+        </div>
+      </div>
+      <div class="kyc-grid-3">
+        <div class="kyc-field">
+          <label>Tipo de identificación</label>
+          <select><option>Cédula</option><option>Pasaporte</option><option>DIMEX</option><option>DIDI</option></select>
+        </div>
+        <div class="kyc-field">
+          <label>Número de identificación *</label>
+          <input type="text" placeholder="X-XXXX-XXXX">
+        </div>
+        <div class="kyc-field">
+          <label>Fecha de nacimiento</label>
+          <input type="date">
+        </div>
+      </div>
+      <div class="kyc-grid-3">
+        <div class="kyc-field">
+          <label>País de nacimiento</label>
+          <input type="text" value="Costa Rica">
+        </div>
+        <div class="kyc-field">
+          <label>Nacionalidad</label>
+          <input type="text" value="Costarricense">
+        </div>
+        <div class="kyc-field">
+          <label>Estado civil</label>
+          <select><option>Soltero(a)</option><option>Casado(a)</option><option>Divorciado(a)</option><option>Unión libre</option></select>
+        </div>
+      </div>
+      <div class="kyc-grid-3">
+        <div class="kyc-field">
+          <label>Profesión</label>
+          <input type="text">
+        </div>
+        <div class="kyc-field">
+          <label>Teléfono celular</label>
+          <input type="tel">
+        </div>
+        <div class="kyc-field">
+          <label>Correo electrónico</label>
+          <input type="email">
+        </div>
+      </div>
+      <div class="kyc-field">
+        <label>Dirección de residencia (Provincia / Cantón / Otras señas)</label>
+        <input type="text">
+      </div>
+      <div class="kyc-grid-2">
+        <div class="kyc-field">
+          <label>¿Ciudadano/residente EE.UU.?</label>
+          <div class="kyc-radio-group"><label><input type="radio" name="eeuu_rl"> Sí</label><label><input type="radio" name="eeuu_rl" checked> No</label></div>
+        </div>
+        <div class="kyc-field">
+          <label>¿Residente fiscal en otro país?</label>
+          <div class="kyc-radio-group"><label><input type="radio" name="resfis_rl"> Sí</label><label><input type="radio" name="resfis_rl" checked> No</label></div>
+        </div>
+      </div>`;
+
+    case 'agente': return `
+      <div class="kyc-section-title">🏛 Información del Agente Residente</div>
+      <div class="kyc-grid-3">
+        <div class="kyc-field">
+          <label>Nombre completo</label>
+          <input type="text">
+        </div>
+        <div class="kyc-field">
+          <label>Número de identificación</label>
+          <input type="text">
+        </div>
+        <div class="kyc-field">
+          <label>Fecha de nacimiento</label>
+          <input type="date">
+        </div>
+      </div>
+      <div class="kyc-grid-2">
+        <div class="kyc-field">
+          <label>Teléfonos</label>
+          <input type="tel">
+        </div>
+        <div class="kyc-field">
+          <label>Correo electrónico</label>
+          <input type="email">
+        </div>
+      </div>
+      <div class="kyc-field">
+        <label>Dirección del agente</label>
+        <input type="text">
+      </div>
+      <div class="kyc-section-title" style="margin-top:14px">🏢 Socios Accionistas (Formulario 7-FOR-173)</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:12px">Agregue todos los socios con participación en la empresa</div>
+      <div id="socios-lista">
+        <div class="kyc-ref-block">
+          <div style="font-size:12px;font-weight:700;color:var(--blue);margin-bottom:10px">Socio #1</div>
+          <div class="kyc-grid-3">
+            <div class="kyc-field">
+              <label>Nombre completo</label>
+              <input type="text">
+            </div>
+            <div class="kyc-field">
+              <label>Cédula / Identificación</label>
+              <input type="text">
+            </div>
+            <div class="kyc-field">
+              <label>% de participación</label>
+              <input type="number" placeholder="0-100">
+            </div>
+          </div>
+          <div class="kyc-grid-3">
+            <div class="kyc-field">
+              <label>Profesión</label>
+              <input type="text">
+            </div>
+            <div class="kyc-field">
+              <label>Teléfono celular</label>
+              <input type="tel">
+            </div>
+            <div class="kyc-field">
+              <label>Correo electrónico</label>
+              <input type="email">
+            </div>
+          </div>
+        </div>
+      </div>
+      <button onclick="addSocio()" class="btn btn-ghost btn-sm" style="margin-top:6px">+ Agregar socio</button>`;
+
+    case 'declaracion': return `
+      <div class="kyc-section-title">✍ Declaración Jurada · Consentimiento · Firma</div>
+      <div class="consent-scroll" style="height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:10px;padding:14px;font-size:12px;line-height:1.7;color:var(--text2);background:#FAFAFA;margin-bottom:14px">
+        <strong>DECLARACIÓN JURADA (7-FOR-268)</strong><br>
+        El suscrito, en representación de la entidad señalada, manifiesta en calidad de Declaración Jurada que la operación u actividad económica en la que se encuentra la empresa NO está relacionada con ninguno de los ítems de la Lista de Actividades Excluidas (7-FOR-040), establecida por Grupo Financiero CAFSA.<br><br>
+        Declaro que los socios, directivos, gerentes y beneficiarios finales NO cuentan con antecedentes penales de LC/FT/FPADM, y que NO se encuentran designados en las publicaciones de organizaciones como la ONU, OFAC, y organismos internacionales en materia de LC/FT/FPADM.<br><br>
+        <strong>AUTORIZACIÓN CRS / FATCA</strong><br>
+        Autorizo a Financiera CAFSA a trasladar la información para la implementación del intercambio automático de información CRS en virtud del Acuerdo Multilateral de Autoridades Competentes. Me comprometo a informar dentro de 30 días hábiles si ocurre algún cambio en las circunstancias que afecte el estatus de residencia fiscal.
+      </div>
+      <div class="kyc-checkbox-group" style="margin-bottom:16px">
+        <label><input type="checkbox" id="c1" onchange="updateKycProgress()"> Acepto el tratamiento de datos personales (Ley 8968).</label>
+        <label><input type="checkbox" id="c2" onchange="updateKycProgress()"> Autorizo intercambio de información CAFSA ↔ Purdy Motor.</label>
+        <label><input type="checkbox" id="c3" onchange="updateKycProgress()"> Confirmo que los documentos son auténticos.</label>
+        <label><input type="checkbox" id="c4" onchange="updateKycProgress()"> Autorizo actualización en Sistema CICAC · SUGEF.</label>
+        <label><input type="checkbox" id="c5" onchange="updateKycProgress()"> Declaro que actividades no están en Lista de Exclusiones (7-FOR-040).</label>
+        <label><input type="checkbox" id="c6" onchange="updateKycProgress()"> Confirmo cumplimiento ambiental, social y de seguridad ocupacional.</label>
+      </div>
+      <div class="kyc-section-title">✏ Firma del Representante Legal</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:10px">Firme con el dedo o mouse en representación de la empresa.</div>
+      <div class="sig-wrap"><canvas id="sig-canvas" width="600" height="120"></canvas><div class="sig-label">✏ Firme aquí</div></div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn btn-ghost btn-sm" onclick="clearSig()">Borrar firma</button>
+      </div>`;
+
+    default:
+      // Reuse física panels for shared sections
+      return buildKycPanelFisica(stepId);
+  }
+}
+
+// ── Engine ────────────────────────────────────────────────
+function switchKycTipo(tipo) {
+  kycTipo = tipo;
+  kycCurrentStep = 0;
+  kycDoneSteps = new Set();
+  document.getElementById('kyc-tipo-fisica').style.cssText   = tipo === 'fisica'   ? 'padding:7px 18px;background:#CC0000;color:#fff;border:none;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer' : 'padding:7px 18px;background:#fff;color:#888;border:none;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer';
+  document.getElementById('kyc-tipo-juridica').style.cssText = tipo === 'juridica' ? 'padding:7px 18px;background:#CC0000;color:#fff;border:none;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer' : 'padding:7px 18px;background:#fff;color:#888;border:none;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer';
+  document.getElementById('kyc-form-title').textContent = tipo === 'fisica' ? 'Formulario · Persona Física · 7-FOR-057' : 'Formulario · Persona Jurídica · 7-FOR-058';
+  renderKycForm();
+}
+
+function renderKycForm() {
+  const steps = kycTipo === 'fisica' ? KYC_STEPS_FISICA : KYC_STEPS_JURIDICA;
+
+  // Render tabs
+  const tabs = document.getElementById('kyc-step-tabs');
+  if (tabs) {
+    tabs.innerHTML = steps.map((s, i) => {
+      const cls = i === kycCurrentStep ? 'kyc-step-tab active' : kycDoneSteps.has(i) ? 'kyc-step-tab done' : 'kyc-step-tab';
+      return `<button class="${cls}" onclick="kycGoTo(${i})">${s.icon} ${s.label}</button>`;
+    }).join('');
+  }
+
+  // Render step dots
+  const dots = document.getElementById('kyc-step-dots');
+  if (dots) {
+    dots.innerHTML = steps.map((_, i) =>
+      `<div style="flex:1;height:4px;border-radius:2px;background:${kycDoneSteps.has(i)?'#1E5C08':i===kycCurrentStep?'#CC0000':'#E0E0E0'}"></div>`
+    ).join('');
+  }
+
+  // Render panel
+  const panels = document.getElementById('kyc-panels');
+  if (panels) {
+    const html = kycTipo === 'fisica'
+      ? buildKycPanelFisica(steps[kycCurrentStep].id)
+      : buildKycPanelJuridica(steps[kycCurrentStep].id);
+    panels.innerHTML = `<div class="card" style="padding:18px 20px">${html}</div>`;
+    initSigCanvas();
+  }
+
+  // Progress
+  const pct = Math.round((kycDoneSteps.size / steps.length) * 100);
+  const pctEl = document.getElementById('kyc-pct');
+  const fillEl = document.getElementById('kyc-fill');
+  if (pctEl) pctEl.textContent = pct + '%';
+  if (fillEl) fillEl.style.width = pct + '%';
+
+  // Buttons
+  const prevBtn = document.getElementById('kyc-prev-btn');
+  const nextBtn = document.getElementById('kyc-next-btn');
+  const subBtn  = document.getElementById('kyc-submit-btn');
+  if (prevBtn) prevBtn.style.display = kycCurrentStep > 0 ? 'flex' : 'none';
+  if (nextBtn) nextBtn.style.display = kycCurrentStep < steps.length - 1 ? 'flex' : 'none';
+  if (subBtn)  subBtn.style.display  = kycCurrentStep === steps.length - 1 ? 'flex' : 'none';
+}
+
+function kycGoTo(idx) {
+  kycDoneSteps.add(kycCurrentStep);
+  kycCurrentStep = idx;
+  renderKycForm();
+  document.getElementById('mod-kyc')?.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function kycNext() {
+  const steps = kycTipo === 'fisica' ? KYC_STEPS_FISICA : KYC_STEPS_JURIDICA;
+  kycDoneSteps.add(kycCurrentStep);
+  if (kycCurrentStep < steps.length - 1) { kycCurrentStep++; renderKycForm(); }
+  document.getElementById('kyc-panels')?.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function kycPrev() {
+  if (kycCurrentStep > 0) { kycCurrentStep--; renderKycForm(); }
+  document.getElementById('kyc-panels')?.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function fakeKycUpload(zone) {
+  zone.innerHTML = '<div class="kyc-uploaded-file">✓ documento_cargado.pdf <span style="margin-left:auto;font-size:10px;opacity:.6">Cargado</span></div>';
+  zone.style.cursor = 'default';
+}
+
+function addSocio() {
+  const lista = document.getElementById('socios-lista');
+  if (!lista) return;
+  const n = lista.querySelectorAll('.kyc-ref-block').length + 1;
+  const div = document.createElement('div');
+  div.className = 'kyc-ref-block';
+  div.innerHTML = \`
+    <div style="font-size:12px;font-weight:700;color:var(--blue);margin-bottom:10px">Socio #\${n}</div>
+    <div class="kyc-grid-3">
+      <div class="kyc-field"><label>Nombre completo</label><input type="text"></div>
+      <div class="kyc-field"><label>Cédula</label><input type="text"></div>
+      <div class="kyc-field"><label>% participación</label><input type="number" placeholder="0-100"></div>
+    </div>\`;
+  lista.appendChild(div);
+}
+
+// Init on module load
+const _origGoModule = goModule;
+goModule = function(id, idx) {
+  _origGoModule(id, idx);
+  if (id === 'kyc') setTimeout(renderKycForm, 100);
+};
+// Also render on DOMContentLoaded
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    if (document.getElementById('kyc-panels')) renderKycForm();
+  }, 200);
+});
+
 function updateKycProgress() {
   const c = ['c1','c2','c3'].filter(id => (document.getElementById(id)||{}).checked).length;
   const pct = 60 + c*10 + (sigHasMark ? 10 : 0);
